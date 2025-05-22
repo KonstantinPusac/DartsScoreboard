@@ -1,0 +1,30 @@
+﻿@namespace DartsScoreboard
+@page "/saved-games"
+
+@if (SavedGamesList == null || !SavedGamesList.Any())
+{
+    <div style="display:flex; justify-content:center; align-items:center; height:100vh;">
+        <MudText><p>No saved games found.</p></MudText>
+    </div>
+}
+else
+{
+    <ul>
+        @foreach (var game in SavedGamesList)
+        {
+            <MudContainer MaxWidth="MaxWidth.False" Class="px-2">
+                <MudPaper Elevation="1" Class="my-4 px-6 py-4 mx-auto" Style="max-width: 500px;">
+                    <MudStack Spacing="1">
+                        <MudText><strong>Date:</strong> @game.LastModified.ToLocalTime().ToString("g")</MudText>
+                        <MudText><strong>Players:</strong> @string.Join(", ", game.Players.Select(p => p.Name))</MudText>
+                        <MudText><strong>Points:</strong> @game.StartingPoints | Sets: @game.NumOfSets | Legs: @game.NumOfLegs</MudText>
+                        <MudStack Direction="Row" Spacing="1" Justify="Justify.Center">
+                            <MudButton Variant="Variant.Filled" Color="Color.Tertiary" OnClick="() => ResumeGame(game.Code)">Resume</MudButton>
+                            <MudButton Variant="Variant.Filled" Color="Color.Error" OnClick="() => DeleteGame(game.Code)">Delete</MudButton>
+                        </MudStack>
+                    </MudStack>
+                </MudPaper>
+            </MudContainer>
+        }
+    </ul>
+}

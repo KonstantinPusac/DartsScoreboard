@@ -1,0 +1,127 @@
+﻿@namespace DartsScoreboard
+@page "/gamesStandard"
+@using MudBlazor
+
+<h2>Game</h2>
+
+<div class="game-container">
+
+    <!-- Player Options -->
+    <div class="player-options">
+        <h4>Player settings</h4>
+        <!-- Add Player -->
+        <button class="btn btn-primary mb-2" @onclick="PlayerService.OpenAddPopup" disabled="@IsFull">
+            Add Player
+        </button>
+
+        <!-- Added Players Display -->
+        <div class="d-flex flex-wrap gap-2 mb-3">
+            @foreach (var player in PlayerService.SelectedPlayers)
+            {
+                <div class="card p-2 d-flex align-items-center" style="width: 130px;">
+                    <div>@player.Name</div>
+                    <button class="btn btn-sm btn-outline-danger mt-2" @onclick="() => PlayerService.RemovePlayer(player)">
+                        Remove
+                    </button>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Game Options -->
+    <div class="game-options">
+        <h4>Game settings</h4>
+        <!-- Score Options -->
+        <div class="form-group mb-3">
+            <MudStack>
+                <MudToggleGroup T="string" Color="Color.Primary" SelectedClass="@_style" @bind-Value="_starting_score">
+                    <MudToggleItem Value="@("301")" />
+                    <MudToggleItem Value="@("501")" />
+                    <MudToggleItem Value="@("701")" />
+                    <MudToggleItem Value="@("Custom")" />
+                </MudToggleGroup>
+            </MudStack>
+            @if (_starting_score == "Custom")
+            {
+                <MudTextField @bind-Value="WriteScoreText" Label="Filled" Variant="Variant.Filled" Style="color:white"></MudTextField>
+			}
+        </div>
+        <!-- Start With Options -->
+        <div class="form-group mb-3">
+            <MudStack>
+                <MudToggleGroup T="string" Color="Color.Primary" SelectedClass="@_style" @bind-Value="_start_with">
+                    <MudToggleItem Value="@("STRAIGHT IN")" />
+                    <MudToggleItem Value="@("DOUBLE IN")" />
+                    <MudToggleItem Value="@("MASTER IN")" />
+                </MudToggleGroup>
+            </MudStack>
+        </div>
+        <!-- End With Options -->
+        <div class="form-group">
+            <MudStack>
+                <MudToggleGroup T="string" Color="Color.Primary" SelectedClass="@_style" @bind-Value="_finish_with">
+                    <MudToggleItem Value="@("DOUBLE OUT")" />
+                    <MudToggleItem Value="@("MASTER OUT")" />
+                    <MudToggleItem Value="@("STRAIGHT OUT")" />
+                </MudToggleGroup>
+            </MudStack>
+        </div>
+        <!-- Number of Legs -->
+        <div class="form-group mb-3">
+            <MudNumericField Class="white-label-input" @bind-Value="SelectedNumOfLegs" Label="Number of legs" Style="color: white" Variant="Variant.Text" Min="1" Max="100" />
+        </div>
+
+        <!-- Number of Sets -->
+        <div class="form-group mb-3">
+            <MudNumericField Class="white-label-input" @bind-Value="SelectedNumOfSets" Label="Number of sets" Variant="Variant.Text" Style="color: white" Min="1" Max="100" />
+        </div>
+    </div>
+
+    <!-- Start & Saved Games Buttons -->
+    <div class="d-flex gap-3 mt-3">
+        <button class="btn btn-primary" @onclick="StartGame">
+            Start
+        </button>
+        <button class="btn btn-outline-secondary" @onclick="GoToSavedGames">
+            Saved Games
+        </button>
+    </div>
+
+</div>
+
+<!-- Pop Up -->
+@if (PlayerService.ShowAddPopup)
+{
+    <div class="modal-overlay">
+        <div class="modal-box">
+            <h5 style="color:black">Select player type</h5>
+            <button class="btn btn-outline-primary mb-2" @onclick="PlayerService.ShowExistingPlayerSelection">
+                Existing Player
+            </button>
+            <button class="btn btn-outline-secondary mb-2" @onclick="PlayerService.AddGuestPlayer">
+                Guest Player
+            </button>
+            <button class="btn btn-sm btn-outline-danger" @onclick="PlayerService.CloseAddPopup">Cancel</button>
+
+            @if (PlayerService.ShowUserDropdown)
+            {
+                <select class="form-control mt-2" @onchange="OnUserSelected">
+                    <option disabled selected>Select player</option>
+                    @foreach (var user in PlayerService.AllUsers)
+                    {
+                        <option value="@user.Id">@user.Name</option>
+                    }
+                </select>
+            }
+        </div>
+    </div>
+}
+@if (ErrorPopup)
+{
+    <div class="error-popup">
+        <div class="error-content">
+            <p>@CurrentErrorMessage</p>
+            <button class="btn btn-danger mt-2" @onclick="ClearErrorMessage">Close</button>
+        </div>
+    </div>
+}

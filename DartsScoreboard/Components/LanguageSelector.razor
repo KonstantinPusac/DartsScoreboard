@@ -1,0 +1,16 @@
+﻿@namespace DartsScoreboard
+
+@if (Languages != null)
+{
+    <div class="form-group">
+        <label for="language-select">@Translations.Get("Language", SelectedLanguage):</label>
+        <select id="language-select" class="form-control" @onchange="OnChange">
+            @foreach (var lang in Languages)
+            {
+                <option value="@lang.Code" selected="@(lang.Code == SelectedLanguage)">
+                    @lang.DisplayName
+                </option>
+            }
+        </select>
+    </div>
+}

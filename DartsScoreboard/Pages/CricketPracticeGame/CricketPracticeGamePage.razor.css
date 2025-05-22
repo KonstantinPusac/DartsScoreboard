@@ -1,0 +1,81 @@
+﻿.main-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    height: 100vh;
+    width: 100vw;
+    padding: 20px 20px;
+}
+.undo-redo
+{
+    border-radius:10px;
+    background-color:var(--color1);
+    color:white;
+    padding:10px;
+}
+.top-buttons {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.target-container {
+    width: 100%;
+    height: 200px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.target-num {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 45px;
+    width: 120px;
+    height: 120px;
+    border-radius: 15px;
+    background-color: var(--color1);
+}
+
+.players-and-keyboard {
+    width: 100%;
+}
+
+.keyboard-padding {
+    height: 20px;
+
+}
+
+.keyboard-container {
+    height: 80px;
+    font-size:35px;
+    color:white  ;
+}
+
+.score-table {
+    border-collapse: collapse;
+    border: 1px solid black;
+    width: 100%;
+    padding:15px;
+    table-layout: fixed;
+}
+
+    .score-table th,
+    .score-table td {
+        border: 1px solid black;
+        text-align: center;
+        padding: 8px;
+        word-wrap: break-word;
+    }
+
+        .score-table th:first-child,
+        .score-table td:first-child {
+            width: 33%;
+        }
+
+.highlight-column {
+    background-color: var(--color2);
+    color: black;
+}

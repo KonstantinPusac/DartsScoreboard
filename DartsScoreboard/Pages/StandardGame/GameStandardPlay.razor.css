@@ -1,0 +1,131 @@
+﻿.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5); /* semi-transparent background */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modal-box {
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    width: 300px;
+    text-align: center;
+}
+.input-area {
+    display: flex;
+    flex-direction: column;
+    height: 50vh; /* Half of the screen height */
+    justify-content: space-between;
+    margin-top: 20px;
+}
+
+.input-display {
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.submit-button {
+    margin-top: 10px;
+}
+
+.keyboard-container {
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+}
+.dart-input {
+    width: 60px;
+    height: 60px;
+    border: 2px solid gray;
+    margin: 0 8px;
+    font-size: 1.5rem;
+    text-align: center;
+    line-height: 60px;
+    border-radius: 8px;
+    background-color: #f8f9fa;
+    color:black;
+}
+
+.dart-input.active {
+    border-color: #007bff;
+    background-color: #e0f0ff;
+}
+.text-muted
+{
+    color:lightgray !important;
+}
+.main-container { 
+    padding: 20px 20px;
+}
+/* Input score textbox */
+::deep .text-field-style .mud-input-root {
+    border: 2px solid gray;
+    margin: 0 8px;
+    font-size: 1.5rem;
+    text-align: center;
+    border-radius: 15px;
+    border-color: #6200EA;
+    border-width: 3px;
+    background-color: #e0f0ff;
+    color: black;
+}
+
+/* Dart keyboard selection */
+::deep .centered-button-group {
+    display: flex;
+    justify-content: center; /* Center horizontally */
+    align-items: center; /* Center vertically (if inside a flex container) */
+    margin: 16px auto; /* Add vertical spacing and center block */
+    width: 100%; /* Stretch to full width */
+    max-width: 400px; /* Optional: Limit max width */
+}
+
+/* Player look */
+.player-box {
+    border: 2px solid black;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 24px;
+    background-color: white;
+    max-width: 400px;
+}
+
+.current-player {
+    background-color: #b3e5fc !important; /* Light blue */
+}
+
+.player-header {
+    border: 2px solid black;
+    padding: 6px 10px;
+    margin-bottom: 12px;
+    background-color: white;
+}
+
+.player-main-score {
+    margin: 16px 0;
+}
+
+.main-score {
+    font-weight: bold;
+}
+
+.suggestion {
+    font-style: italic;
+}
+
+.player-stats {
+    font-size: 0.95rem;
+}
+.mud-theme-primary {
+    background-color: #b3d9f7;
+    border: 2px solid black;
+}

@@ -1,0 +1,43 @@
+﻿@namespace DartsScoreboard
+@page "/cricket-setup"
+
+<h2>Game</h2>
+
+<div class="game-container">
+
+    <!-- Player Options -->
+    <div class="player-options">
+        <h4>Player settings</h4>
+        <!-- Add Player -->
+        <button class="btn btn-primary mb-2" @onclick="OpenAddPopup" disabled="@IsFull">
+            Add Player
+        </button>
+
+        <!-- Added Players Display -->
+        <div class="d-flex flex-wrap gap-2 mb-3">
+            @foreach (var player in PlayerService.SelectedPlayers)
+            {
+                <div class="card p-2 d-flex align-items-center" style="width: 130px;">
+                    <div>@player.Name</div>
+                    <button class="btn btn-sm btn-outline-danger mt-2" @onclick="() => PlayerService.RemovePlayer(player)">
+                        Remove
+                    </button>
+                </div>
+            }
+        </div>
+    </div> 
+
+    <!-- Start Button -->
+    <div class="start-button">
+        <button class="btn btn-primary" @onclick="StartGame">
+            Start
+        </button>
+    </div>
+
+</div>
+
+<!-- Pop Up -->
+@if (PlayerService.ShowAddPopup)
+{
+  
+}

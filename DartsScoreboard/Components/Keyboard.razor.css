@@ -1,0 +1,57 @@
+﻿.keyboard-container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    gap: 5px; /* Fixed gap between rows */
+}
+
+.keyboard-row {
+    display: flex;
+    flex: 1;
+    color: white;
+    gap: 5px; /* Fixed gap between keys */
+}
+
+.keyboard-key {
+    flex: 1;
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: transparent;
+    border: 2px solid #ccc;
+    border-radius: 4px;
+    text-align: center;
+    position: relative;
+    width: 100%;
+    overflow: hidden; /* Prevent text overflow */
+    font-size: 1rem;
+    border: 3px solid var(--color1);
+}
+.hit-count {
+    position:absolute;
+    top:0px;
+    right:0px;
+    padding:2px;
+    font-size: 0.8rem; 
+}
+.keyboard-key-disabled {
+    position: relative;
+    pointer-events: none;
+    opacity: 0.6;
+}
+
+    .keyboard-key-disabled::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(255, 255, 255, 0.5);
+        z-index: 1;
+    }
+.keyboard-key-selected {
+    border: 3px solid var(--color2);
+}

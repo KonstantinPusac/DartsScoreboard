@@ -1,0 +1,58 @@
+﻿@page "/cricket-practice/{gameCode}"
+@namespace DartsScoreboard 
+<div class="main-container">
+    <div class="top-buttons">
+        <button class="undo-redo" @onclick="Undo">Undo</button>
+        <button class="undo-redo" @onclick="Redo">Redo</button>
+    </div>
+
+    <div class="target-container">
+        <div class="target-num">
+            @CurrentTarget
+        </div>
+    </div>
+
+    <div class="players-and-keyboard">
+        <table class="score-table">
+            <thead>
+                <tr class="table-header">
+                    <th>Target</th>
+                    @for (int i = 0; i < Players.Count; i++)
+                    {
+                        <th class="@(i == PlayerOnTurnIndex ? "highlight-column" : "")">
+                            @Players[i].UserName
+                        </th>
+                    }
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var target in Game.Targets)
+                {
+                    <tr>
+                        <td class="target">@target</td>
+                        @for (int i = 0; i < Players.Count; i++)
+                        {
+                            <td class="target @(i == PlayerOnTurnIndex ? "highlight-column" : "")">
+                                @(Players[i].Throws.FirstOrDefault(x => x.Number == target)?.ToString()?? "")
+                            </td>
+                        }
+                    </tr>
+                }
+
+                <tr>
+                    <td>Total</td>
+                    @for (int i = 0; i < Players.Count; i++)
+                    {
+                        <td class="total @(i == PlayerOnTurnIndex ? "highlight-column" : "")">@Players[i].Points</td>
+                    }
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="keyboard-padding"></div>
+
+        <div class="keyboard-container">
+            <Keyboard KeyboardParameters="KeyboardParameters" KeyClick="HandleKey" />
+        </div>
+    </div>
+</div> 

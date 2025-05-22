@@ -1,0 +1,169 @@
+﻿@namespace DartsScoreboard
+@page "/gameStandardPlay/{GameCode}"
+
+@if (WinnerPopup)
+{
+    <div class="winner-popup">
+        <h2>Game Over 🏋️</h2>
+
+        <h3 class="mb-3">Final Player Statistics</h3>
+
+        @foreach (var player in Players)
+        {
+            <div class="card p-3 mb-3">
+                <h4>@player.Name @(player.Id == Players[CurrentPlayerIndex].Id ? "(Winner 🏆)" : "")</h4>
+                <p>Three-Dart Average: @player.Stats.ThreeDartAverage.ToString("F2")</p>
+                <p>Best three-dart average leg: @player.Stats.BestThreeDartLegAverage.ToString("F2")</p>
+                <p>Checkout Percentage: @player.Stats.CheckoutPercentage.ToString("F2")%</p>
+                <p>Best leg: @player.Stats.BestNumOfDartsThrown.ToString()</p>
+                <p>Worst leg: @player.Stats.WorstNumOfDartsThrown.ToString()</p>
+                <p>Highest Score: @player.Stats.HighestScore</p>
+
+                <h5>High Scores Hit:</h5>
+                <ul>
+                    @foreach (var hit in player.Stats.HighScoreHits)
+                    {
+                        @if (hit.Value > 0)
+                        {
+                            <li>@hit.Key: @hit.Value times</li>
+                        }
+                    }
+                </ul>
+            </div>
+        }
+
+        <div class="mt-4">
+            <button class="btn btn-success me-2" @onclick="ResetGame">Restart Game</button>
+            <button class="btn btn-outline-secondary" @onclick="GoHome">Home</button>
+        </div>
+    </div>
+}
+else
+{
+    <div class="main-container">
+        <MudPaper Class="p-4" Style="background-color:#e0f0ff">
+            <MudGrid>
+                @foreach (var player in Players)
+                {
+                    <MudItem xs="6">
+                        <MudPaper Class="@GetPlayerClass(player)">
+                            <MudText Typo="Typo.h6">@player.Name</MudText>
+                            <MudText Typo="Typo.h6">@GetDisplayedScore(player.Id)</MudText>
+                        </MudPaper>
+                    </MudItem>
+                }
+            </MudGrid>
+
+            <MudPaper Class="mt-4 p-4 mud-theme-primary">
+                @if (Players != null && Players?.Count > CurrentPlayerIndex)
+                {
+                    <MudText Typo="Typo.subtitle1" Align="Align.Center">@Players[CurrentPlayerIndex].Name</MudText>
+                    <MudText Typo="Typo.h3" Align="Align.Center" Class="font-bold">@GetDisplayedScore(Players[CurrentPlayerIndex].Id)</MudText>
+                }
+                <MudText Typo="Typo.subtitle1" Align="Align.Center">@GetSuggestedOut()</MudText>
+
+                <MudText Typo="Typo.subtitle2" Class="mt-4">Average: @GetAverage()</MudText>
+                <MudText Typo="Typo.subtitle2">Leg average: @GetLegAverage()</MudText>
+                <MudText Typo="Typo.subtitle2">Darts: @GetDartsThrown()</MudText>
+            </MudPaper>
+        </MudPaper>
+
+        <div class="input-area">
+            <!-- Mode Switch -->
+            <MudButtonGroup Color="Color.Primary" Variant="Variant.Filled" Class="centered-button-group">
+                <MudButton FullWidth="true" onclick="SwitchToRegularMode">Regular</MudButton>
+                <MudButton FullWidth="true" onclick="SwitchToThreeDartMode">3 Darts</MudButton>
+            </MudButtonGroup>
+
+            @if (UseThreeDartMode)
+            {
+                <!-- Dart Input Squares -->
+                <div class="d-flex justify-content-center mb-2">
+                    <div class="dart-input @(DartIndex == 1 ? "active" : "")">@InputScoreDartOne</div>
+                    <div class="dart-input @(DartIndex == 2 ? "active" : "")">@InputScoreDartTwo</div>
+                    <div class="dart-input @(DartIndex == 3 ? "active" : "")">@InputScoreDartThree</div>
+                </div>
+
+                <MudButton Class="mb-3" Style="height:80px" Variant="Variant.Filled" Color="Color.Primary" onclick="SubmitScore">Submit</MudButton>
+
+                <!-- Multiplier Mode Switch -->
+                <div class="btn-group mb-3" role="group">
+                    <button class="btn @(SelectedMultiplier == "S" ? "btn-primary" : "btn-outline-secondary")" @onclick='() => SelectedMultiplier = "S"'>Single</button>
+                    <button class="btn @(SelectedMultiplier == "D" ? "btn-primary" : "btn-outline-secondary")" @onclick='() => SelectedMultiplier = "D"'>Double</button>
+                    <button class="btn @(SelectedMultiplier == "T" ? "btn-primary" : "btn-outline-secondary")" @onclick='() => SelectedMultiplier = "T"'>Triple</button>
+                </div>
+
+                <!-- Keyboard -->
+                @switch (SelectedMultiplier)
+                {
+                    case "D":
+                        <Keyboard KeyboardParameters="KeyboardParamsEachDartDouble" KeyClick="HandleKeyEachDart" />
+                        break;
+                    case "T":
+                        <Keyboard KeyboardParameters="KeyboardParamsEachDartTriple" KeyClick="HandleKeyEachDart" />
+                        break;
+                    default:
+                        <Keyboard KeyboardParameters="KeyboardParamsEachDartSingle" KeyClick="HandleKeyEachDart" />
+                        break;
+                }
+            }
+            else
+            {
+                <!-- Regular Input Mode -->
+                <MudStack Row="true" Spacing="2" Justify="Justify.Center">
+                    <MudTextField @bind-Value="InputScore" Variant="Variant.Outlined" Disabled="true" Class="text-field-style"/>
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" onclick="SubmitScore">Submit</MudButton>
+                </MudStack>
+
+                <div class="keyboard-container">
+                    <Keyboard KeyboardParameters="KeyboardParams" KeyClick="HandleKey" />
+                </div>
+            }
+        </div>
+    </div>
+}
+
+@if (ShowCheckoutPopup)
+{
+    <div class="modal-overlay">
+        <div class="modal-box">
+            <h4 style="color:black">Checkout Information</h4>
+
+            <div class="mb-2">
+                <label style="color:black">Number of darts thrown at double:</label>
+                <div class="btn-group mt-1" role="group">
+                    @foreach (var option in AvailableDoubleDartOptions)
+                    {
+                        <button type="button"
+                                class="btn @(SelectedDartsUsedOnDouble == option ? "btn-primary" : "btn-outline-primary")"
+                                @onclick="() => OnSelectDartsUsedOnDouble(option)">
+                            @option
+                        </button>
+                    }
+                </div>
+            </div>
+
+            @if (AvailableCheckoutDartOptions?.Count > 0)
+            {
+                <div class="mb-2">
+                    <label style="color:black">Number of darts used for checkout:</label>
+                    <div class="btn-group mt-1" role="group">
+                        @foreach (var option in AvailableCheckoutDartOptions)
+                        {
+                            <button type="button"
+                                    class="btn @(SelectedDartsUsedOnCheckout == option ? "btn-primary" : "btn-outline-primary")"
+                                    @onclick="() => OnSelectDartsUsedOnCheckout(option)">
+                                @option
+                            </button>
+                        }
+                    </div>
+                </div>
+            }
+
+            <div class="mt-3">
+                <button class="btn btn-success me-2" @onclick="ConfirmCheckoutData">Confirm</button>
+                <button class="btn btn-danger" @onclick="CloseCheckoutPopup">Cancel</button>
+            </div>
+        </div>
+    </div>
+}

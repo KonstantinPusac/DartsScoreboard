@@ -1,0 +1,50 @@
+﻿@namespace DartsScoreboard
+
+@if (KeyboardParameters != null)
+{
+    <div class="keyboard-container">
+        @foreach (List<KeyboardKey> keyboardRow in KeyboardParameters.KeyboardKeys)
+        {
+            <div class="keyboard-row">
+                @foreach (KeyboardKey keyboardKey in keyboardRow)
+                {
+                    bool isDisabled = keyboardKey.IsDisabled?.Invoke() ?? false;
+                    bool isSelected = (keyboardKey.HitCount?.Invoke() ?? 0) > 0;
+
+
+                    <button class="@GetClass(keyboardKey, isDisabled, isSelected)"
+                    style="@GetStyle(keyboardKey, isDisabled)"
+                    disabled="@isDisabled"
+                    @onclick="@(() => { if (!isDisabled) KeyClick.InvokeAsync(keyboardKey); })">
+                        @if (isSelected)
+                        {
+                            
+                            <div class="hit-count">
+                                +@keyboardKey.HitCount
+                            </div>
+                        }
+                        @keyboardKey.Text
+                    </button> 
+                }
+            </div>
+        }
+    </div>
+}
+@code
+{
+    private string GetStyle(KeyboardKey keyboardKey, bool isDisabed)
+    {
+        if (isDisabed)
+            return keyboardKey.StyleDisabled ?? "";
+        return keyboardKey.Style;
+    }
+    private string GetClass(KeyboardKey keyboardKey, bool isDisabed, bool isSelected)
+    {
+        string className = "keyboard-key";
+        if (isDisabed)
+            className+= " keyboard-key-disabled";
+        if (isSelected)
+            className += " keyboard-key-selected";
+        return className;
+    }
+}

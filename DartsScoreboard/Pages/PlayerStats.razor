@@ -1,0 +1,77 @@
+﻿@page "/PlayerStatistics/{playerId:int}"
+@namespace DartsScoreboard
+
+<h3>Player Stats</h3>
+
+@if (Player == null)
+{
+    <p>Loading player...</p>
+}
+else
+{
+    <div class="player-stats">
+        <h4>@Player.Name</h4>
+        <p><strong>Checkout Percentage:</strong> @Player.Stats.CheckoutPercentage.ToString("F2")%</p>
+        <p><strong>Three Dart Average:</strong> @Player.Stats.ThreeDartAverage.ToString("F2")</p>
+        <p><strong>Darts Per Leg:</strong> @Player.Stats.DartsPerLeg.ToString()</p>
+        <p><strong>Best 3-Dart Leg Average:</strong> @Player.Stats.BestThreeDartLegAverage.ToString("F2")</p>
+        <p><strong>Number of Doubles Thrown:</strong> @Player.Stats.NumOfDoublesThrown</p>
+
+        <h5>High Score Hits:</h5>
+        <ul>
+            @foreach (var kvp in Player.Stats.HighScoreHits)
+            {
+                <li>@kvp.Key: @kvp.Value</li>
+            }
+        </ul>
+
+        <button class="btn btn-secondary mt-3" @onclick="GoBack">Back</button>
+    </div>
+    @if (Player.GameHistory != null && Player.GameHistory.Any())
+    {
+        <h4 class="mt-4">Game History</h4>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>3-Dart Avg</th>
+                    <th>Checkout %</th>
+                    <th>Total Darts</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var game in Player.GameHistory.OrderByDescending(g => g.Timestamp))
+                {
+                    <tr>
+                        <td>@game.Timestamp.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</td>
+                        <td>@game.OldThreeDartAverage.ToString("F2")</td>
+                        <td>@game.OldCheckoutPercentage.ToString("F2")%</td>
+                        <td>@game.OldTotalDartsThrown</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    else
+    {
+        <p>No previous games found.</p>
+    }
+}
+
+@code {
+	[Parameter] public int playerId { get; set; }
+    [Inject] public NavigationManager NavManager { get; set; } = default!;
+    [Inject] public IUserPersistence _UserPersistence { get; set; } = default!;
+
+    public User? Player { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        Player = await _UserPersistence.GetUser(playerId);
+    }
+
+    private void GoBack()
+    {
+        NavManager.NavigateTo("/PlayersStats");
+    }
+}

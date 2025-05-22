@@ -1,0 +1,10 @@
+﻿@namespace DartsScoreboard
+@page "/settings"
+
+<h3>@Translations.Get("Settings", SelectedLanguage)</h3>
+
+<LanguageSelector Languages="AvailableLanguages"
+                  SelectedLanguage="@SelectedLanguage"
+                  SelectedLanguageChanged="@OnLanguageChanged" />
+
+<p>@Translations.Get("Selected language", SelectedLanguage): @SelectedLanguage</p>

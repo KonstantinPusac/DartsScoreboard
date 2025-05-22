@@ -1,0 +1,46 @@
+﻿
+<MudDialog>
+    <TitleContent>
+		Adding a new player
+    </TitleContent>
+    <DialogContent>
+        Player username:
+        <MudTextField @bind-Value="InputPlayerName" Label="Outlined" Variant="Variant.Outlined"></MudTextField>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary" OnClick="Submit">Ok</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [Inject] private IUserPersistence _UserPersistence { get; set; }
+	[Inject] private ISnackbar Snackbar { get; set; }
+
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; }
+
+    public string InputPlayerName { get; set; } = "Player";
+    private async Task Submit()
+    {
+        var allUsers = await _UserPersistence.GetAllUsers();
+        bool usernameTaken = allUsers.Any(u => u.Name.Equals(InputPlayerName, StringComparison.OrdinalIgnoreCase));
+
+        if (usernameTaken)
+        {
+            Snackbar.Add("Username already exists. Please choose another.", Severity.Error);
+            return;
+        }
+
+        var user = new User
+        {
+            Name = InputPlayerName
+        };
+        await _UserPersistence.AddUser(user);
+
+        MudDialog.Close(DialogResult.Ok(true));
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+
+}

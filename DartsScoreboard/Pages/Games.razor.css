@@ -1,0 +1,21 @@
+﻿.home-button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    max-width: 300px;
+    min-height: 100px;
+    border-radius: 10px;
+    background-color: var(--color1);
+    color: white;
+    font-size: 20px;
+}
+
+.buttons-div {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    gap: 15px;
+    padding-top: 50px;
+}

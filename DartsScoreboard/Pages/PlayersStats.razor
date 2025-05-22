@@ -1,0 +1,47 @@
+﻿@page "/PlayersStats"
+@namespace DartsScoreboard
+
+<h3>PlayerStats</h3>
+
+@if (AllPlayers == null || !AllPlayers.Any())
+{
+    <p>No players found.</p>
+}
+else
+{
+    <div class="player-list">
+        @foreach (var player in AllPlayers)
+        {
+            <div class="player-card" style="margin-bottom: 10px;">
+                <div @onclick="() => SelectedPlayer(player.Id)" style="cursor: pointer;">
+                    <h4>@player.Name</h4>
+                    <p>ID: @player.Id</p>
+                </div>
+                <button class="btn btn-danger mt-2" @onclick="@(() => DeletePlayer(player.Id))">Delete</button>
+            </div>
+        }
+    </div>
+}
+
+@code {
+    [Inject] public NavigationManager NavManager { get; set; } = default!;
+	[Inject] public IUserPersistence _UserPersistence { get; set; } = default!;
+
+    public List<User> AllPlayers { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        AllPlayers = await _UserPersistence.GetAllUsers();
+    }
+
+    public void SelectedPlayer(int playerId)
+    {
+        NavManager.NavigateTo($"/PlayerStatistics/{playerId}");
+    }
+
+    public async Task DeletePlayer(int playerId)
+    {
+        await _UserPersistence.RemoveUser(playerId);
+        AllPlayers = await _UserPersistence.GetAllUsers();
+    }
+}

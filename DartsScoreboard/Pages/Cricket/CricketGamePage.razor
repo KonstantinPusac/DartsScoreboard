@@ -1,0 +1,59 @@
+﻿@page "/cricket/{gameCode}"
+@namespace DartsScoreboard 
+
+<div class="container">
+    <div class="score-table">
+        <table>
+            <thead>
+                <tr>
+                    <th>Player</th>
+                    <th>20</th>
+                    <th>19</th>
+                    <th>18</th>
+                    <th>17</th>
+                    <th>16</th>
+                    <th>15</th>
+                    <th>Bull</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var player in Players)
+                {
+                    <tr>
+                        <td>@player.Name</td>
+                        @foreach (var score in player.Scores)
+                        {
+                            <td>@score.Count</td>
+                        }
+                        <td>@player.Points</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <div class="bottom-section">
+        <div class="info-row">
+            <div class="info-box">Point Deficit: @CurrentPlayerDeficit</div>
+            <div class="info-box">Hits: @CurrentPlayerHits</div>
+            <div class="info-box">Current Throw: @CurrentThrowPoints</div>
+        </div>
+
+        <div class="statistics">
+            @* Your statistics content goes here *@
+            <p>Statistics: @StatisticsSummary</p>
+        </div>
+
+        <div class="keyboard-wrapper">
+        keyboard
+        </div>
+    </div>
+</div>
+
+@code { 
+    private int CurrentPlayerDeficit = 0;
+    private int CurrentPlayerHits = 0;
+    private int CurrentThrowPoints = 0;
+    private string StatisticsSummary = ""; 
+}  

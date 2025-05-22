@@ -1,0 +1,24 @@
+﻿@namespace DartsScoreboard
+
+<div class="modal-overlay">
+    <div class="modal-box"> 
+        <button class="btn btn-outline-primary mb-2" @onclick="ShowExistingPlayerSelection">
+            Existing Player
+        </button>
+        <button class="btn btn-outline-secondary mb-2" @onclick="AddGuestPlayer">
+            Guest Player
+        </button>
+        <button class="btn btn-sm btn-outline-danger" @onclick="CloseAddPopup">Cancel</button>
+
+        @if (ShowUserDropdown)
+        {
+            <select class="form-control mt-2" @onchange="OnUserSelected">
+                <option disabled selected>Select player</option>
+                @foreach (var user in AllUsers)
+                {
+                    <option value="@user.Id">@user.Name</option>
+                }
+            </select>
+        }
+    </div>
+</div>

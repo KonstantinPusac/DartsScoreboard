@@ -1,0 +1,18 @@
+﻿@page "/"
+@namespace DartsScoreboard
+
+<div class="buttons-div">
+    <MudButton @onclick="NewGame" Variant="Variant.Filled" Color="Color.Primary" Style="background-color: gray; background-color: var(--color1); width: 300px; height: 80px;">
+        New Game
+    </MudButton>
+    <MudButton @onclick="OpenStats" Variant="Variant.Filled" Color="Color.Primary" Style="background-color: gray; background-color: var(--color1); width: 300px; height: 80px;">
+        Player Stats
+    </MudButton>
+    <MudButton @onclick="OpenDialogAsync" Variant="Variant.Filled" Color="Color.Primary" Style="background-color: gray; background-color: var(--color1); width: 300px; height: 80px;">
+        Add Player  
+    </MudButton>
+    <MudButton @onclick="Settings" Variant="Variant.Filled" Color="Color.Primary" Style="background-color: gray; background-color: var(--color1); width: 300px; height: 80px;">
+        Settings
+    </MudButton>
+</div>
+ 

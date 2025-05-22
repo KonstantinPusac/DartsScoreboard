@@ -1,0 +1,83 @@
+﻿@page "/cricket-practice-final/{gameCode}"
+@namespace DartsScoreboard
+<div class="main-div">
+
+    @if (PlayerStats != null && PlayerStats.Any())
+    {
+        <div class="table-responsive">
+            <h3>Statistics</h3>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th></th>
+                        @foreach (var player in PlayerStats)
+                        {
+                            <th>@player.Name</th>
+                        }
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Points</td>
+                        @foreach (var player in PlayerStats)
+                        {
+                            <td>@player.Points</td>
+                        }
+                    </tr>
+                    <tr>
+                        <td>Average</td>
+                        @foreach (var player in PlayerStats)
+                        {
+                            <td>@player.Average.ToString("0.00")</td>
+                        }
+                    </tr>
+                    <tr>
+                        <td>Closed numbers</td>
+                        @foreach (var player in PlayerStats)
+                        {
+                            <td>@($"{player.ClosedNumbers} ({player.ClosedNumbersRate.ToString("0.00")}%)")</td>
+                        }
+                    </tr>
+                    <tr>
+                        <td>Hit Rate</td>
+                        @foreach (var player in PlayerStats)
+                        {
+                            <td>@player.HitRate.ToString("0.00")%</td>
+                        }
+                    </tr>
+                    <tr>
+                        <td>Single</td>
+                        @foreach (var player in PlayerStats)
+                        {
+                            <td>@($"{player.SingleCount} ({player.SingleRate.ToString("0.00")}%)")</td>
+                        }
+                    </tr>
+                    <tr>
+                        <td>Double</td>
+                        @foreach (var player in PlayerStats)
+                        {
+                            <td>@($"{player.DoubleCount} ({player.DoubleRate.ToString("0.00")}%)")</td>
+                        }
+                    </tr>
+                    <tr>
+                        <td>Triple</td>
+                        @foreach (var player in PlayerStats)
+                        {
+                            <td>@($"{player.TripleCount} ({player.TripleRate.ToString("0.00")}%)")</td>
+                        }
+                    </tr>
+                </tbody>
+            </table>
+            <div class="action-buttons">
+
+                <button class="action-button" @onclick=NavigateToSetup>New game</button>
+                <button class="action-button" @onclick=RepeatGame>Repeat game</button>
+            </div>
+        </div>
+    }
+    else
+    {
+        <p></p>
+    }
+
+</div>
