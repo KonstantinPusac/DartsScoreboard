@@ -80,13 +80,14 @@ else
             @if (UseThreeDartMode)
             {
                 <!-- Dart Input Squares -->
-                <div class="d-flex justify-content-center mb-2">
-                    <div class="dart-input @(DartIndex == 1 ? "active" : "")">@InputScoreDartOne</div>
-                    <div class="dart-input @(DartIndex == 2 ? "active" : "")">@InputScoreDartTwo</div>
-                    <div class="dart-input @(DartIndex == 3 ? "active" : "")">@InputScoreDartThree</div>
-                </div>
-
-                <MudButton Class="mb-3" Style="height:80px" Variant="Variant.Filled" Color="Color.Primary" onclick="SubmitScore">Submit</MudButton>
+                <MudStack Row="true" Spacing="2" Justify="Justify.Center">
+                    <div class="d-flex justify-content-center mb-2">
+                        <div class="dart-input @(DartIndex == 1 ? "active" : "")">@InputScoreDartOne</div>
+                        <div class="dart-input @(DartIndex == 2 ? "active" : "")">@InputScoreDartTwo</div>
+                        <div class="dart-input @(DartIndex == 3 ? "active" : "")">@InputScoreDartThree</div>
+                    </div>
+                    <MudButton Class="mb-3" Style="height:60px" Variant="Variant.Filled" Color="Color.Primary" onclick="SubmitScore">Submit</MudButton>
+                </MudStack>
 
                 <!-- Multiplier Mode Switch -->
                 <div class="btn-group mb-3" role="group">
@@ -114,6 +115,7 @@ else
                 <!-- Regular Input Mode -->
                 <MudStack Row="true" Spacing="2" Justify="Justify.Center">
                     <MudTextField @bind-Value="InputScore" Variant="Variant.Outlined" Disabled="true" Class="text-field-style"/>
+                    <MudIconButton Icon="@Icons.Material.Filled.Backspace" Color="Color.Error" OnClick="HandleInsideDeleteKeyRegularkeyboard" />
                     <MudButton Variant="Variant.Filled" Color="Color.Primary" onclick="SubmitScore">Submit</MudButton>
                 </MudStack>
 

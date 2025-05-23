@@ -42,6 +42,7 @@ namespace DartsScoreboard
         public int CurrentPlayerIndex { get; set; } = 0;
 
         // Input scores
+        public int InputRemainingScore { get; set; } = 0;
         public string InputScore { get; set; } = "";
         public string InputScoreDartOne { get; set; } = "";
         public string InputScoreDartTwo { get; set; } = "";
@@ -901,14 +902,25 @@ namespace DartsScoreboard
             }
         }
 
+        private void HandleInsideDeleteKeyRegularkeyboard()
+        {
+            if (!string.IsNullOrEmpty(InputScore))
+            {
+                InputScore = InputScore.Substring(0, InputScore.Length - 1);
+            }
+        }
 
         private async Task HandleKey(KeyboardKey key)
         {
-            if (key.Value == "DEL")
+            if (key.Value == "REM")
             {
-                if (!string.IsNullOrEmpty(InputScore))
+                var currentPlayer = Players[CurrentPlayerIndex];
+
+                if (int.TryParse(InputScore, out int score))
                 {
-                    InputScore = InputScore.Substring(0, InputScore.Length - 1);
+                    InputRemainingScore = score;
+                    InputScore = (PlayerScores[currentPlayer.Id].PlayerScore - InputRemainingScore).ToString();
+                    await SubmitScore();
                 }
             }
             else if (key.Value == "UNDO")
@@ -983,12 +995,14 @@ namespace DartsScoreboard
             {
                 case 1:
                     InputScoreDartOne = value;
-                    if (GameSettings.EndInOption == "DOUBLE OUT" && SelectedMultiplier == "D" && PlayerScores[currentPlayer.Id].PlayerScore - int.Parse(value) == 0)
+                    if (GameSettings.EndInOption == "DOUBLE OUT" && SelectedMultiplier == "D" 
+                            && PlayerScores[currentPlayer.Id].PlayerScore - int.Parse(value) == 0)
                     {
                         DartIndex = 1;
                         await SubmitScore();
                     }
-                    else if (GameSettings.EndInOption == "MASTER OUT" && (SelectedMultiplier == "D" || SelectedMultiplier == "T") && PlayerScores[currentPlayer.Id].PlayerScore - int.Parse(value) == 0)
+                    else if (GameSettings.EndInOption == "MASTER OUT" && (SelectedMultiplier == "D" || SelectedMultiplier == "T") 
+                                && PlayerScores[currentPlayer.Id].PlayerScore - int.Parse(value) == 0)
                     {
                         DartIndex = 1;
                         await SubmitScore();
@@ -998,8 +1012,18 @@ namespace DartsScoreboard
                         DartIndex = 1;
                         await SubmitScore();
                     }
-                    else if (GameSettings.EndInOption == "DOUBLE OUT" && SelectedMultiplier != "D" && PlayerScores[currentPlayer.Id].PlayerScore - int.Parse(value) == 0)
+                    else if (GameSettings.EndInOption == "DOUBLE OUT" && SelectedMultiplier != "D" 
+                                && PlayerScores[currentPlayer.Id].PlayerScore - int.Parse(value) == 0)
                     {
+                        // No double out finish
+                        InputScoreDartOne = "";
+                        DartIndex = 1;
+                        await SubmitScore();
+                    }
+                    else if (GameSettings.EndInOption == "MASTER OUT" && SelectedMultiplier != "D" && SelectedMultiplier != "T" 
+                                && PlayerScores[currentPlayer.Id].PlayerScore - int.Parse(value) == 0)
+                    {
+                        // No double out finish
                         InputScoreDartOne = "";
                         DartIndex = 1;
                         await SubmitScore();
@@ -1030,7 +1054,8 @@ namespace DartsScoreboard
                         DartIndex = 1;
                         await SubmitScore();
                     }
-                    else if (GameSettings.EndInOption == "STRAIGHT OUT" && PlayerScores[currentPlayer.Id].PlayerScore - (int.Parse(InputScoreDartOne) + int.Parse(value)) == 0)
+                    else if (GameSettings.EndInOption == "STRAIGHT OUT" 
+                                && PlayerScores[currentPlayer.Id].PlayerScore - (int.Parse(InputScoreDartOne) + int.Parse(value)) == 0)
                     {
                         DartIndex = 1;
                         await SubmitScore();
@@ -1039,6 +1064,16 @@ namespace DartsScoreboard
                                 && PlayerScores[currentPlayer.Id].PlayerScore - (int.Parse(InputScoreDartOne) + int.Parse(value)) == 0)
                                     || PlayerScores[currentPlayer.Id].PlayerScore - (int.Parse(InputScoreDartOne) + int.Parse(value)) < 2)
                     {
+                        InputScoreDartOne = "";
+                        InputScoreDartTwo = "";
+                        DartIndex = 1;
+                        await SubmitScore();
+                    }
+                    else if ((GameSettings.EndInOption == "MASTER OUT" && SelectedMultiplier != "D" && SelectedMultiplier != "T" 
+                                && PlayerScores[currentPlayer.Id].PlayerScore - (int.Parse(InputScoreDartOne) + int.Parse(value)) == 0)
+                                    || PlayerScores[currentPlayer.Id].PlayerScore - (int.Parse(InputScoreDartOne) + int.Parse(value)) < 2)
+                    {
+                        // No double out finish
                         InputScoreDartOne = "";
                         InputScoreDartTwo = "";
                         DartIndex = 1;
@@ -1061,12 +1096,23 @@ namespace DartsScoreboard
                         DartIndex = 1;
                         await SubmitScore();
                     }
-                    else if (GameSettings.EndInOption == "STRAIGHT OUT" && PlayerScores[currentPlayer.Id].PlayerScore - (int.Parse(InputScoreDartOne) + int.Parse(InputScoreDartTwo) + int.Parse(value)) == 0)
+                    else if (GameSettings.EndInOption == "STRAIGHT OUT" 
+                                && PlayerScores[currentPlayer.Id].PlayerScore - (int.Parse(InputScoreDartOne) + int.Parse(InputScoreDartTwo) + int.Parse(value)) == 0)
                     {
                         DartIndex = 1;
                         await SubmitScore();
                     }
                     else if ((GameSettings.EndInOption == "DOUBLE OUT" && SelectedMultiplier != "D" 
+                                && PlayerScores[currentPlayer.Id].PlayerScore - (int.Parse(InputScoreDartOne) + int.Parse(InputScoreDartTwo) + int.Parse(value)) == 0)
+                                    || PlayerScores[currentPlayer.Id].PlayerScore - (int.Parse(InputScoreDartOne) + int.Parse(InputScoreDartTwo) + int.Parse(value)) < 2)
+                    {
+                        InputScoreDartOne = "";
+                        InputScoreDartTwo = "";
+                        InputScoreDartThree = "";
+                        DartIndex = 1;
+                        await SubmitScore();
+                    }
+                    else if ((GameSettings.EndInOption == "MASTER OUT" && SelectedMultiplier != "D" && SelectedMultiplier != "T"
                                 && PlayerScores[currentPlayer.Id].PlayerScore - (int.Parse(InputScoreDartOne) + int.Parse(InputScoreDartTwo) + int.Parse(value)) == 0)
                                     || PlayerScores[currentPlayer.Id].PlayerScore - (int.Parse(InputScoreDartOne) + int.Parse(InputScoreDartTwo) + int.Parse(value)) < 2)
                     {
@@ -1115,7 +1161,7 @@ namespace DartsScoreboard
                 {
                     new() { Text = "Undo", Value = "UNDO" },
                     new() { Text = "0", Value = "0" },
-                    new() { Text = "Del", Value = "DEL" }  // Delete button
+                    new() { Text = "Remaining", Value = "REM" }  // Remaining button
                 }
             }
         };
