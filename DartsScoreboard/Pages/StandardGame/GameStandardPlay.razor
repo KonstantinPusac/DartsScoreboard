@@ -1,6 +1,8 @@
 ﻿@namespace DartsScoreboard
 @page "/gameStandardPlay/{GameCode}"
 
+<MudButton Variant="Variant.Filled" Color="Color.Error" Style="margin-left: 20px; margin-top: 10px;" OnClick="GoBack">Back</MudButton>
+
 @if (WinnerPopup)
 {
     <div class="winner-popup">

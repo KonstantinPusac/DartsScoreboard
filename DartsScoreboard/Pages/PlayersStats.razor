@@ -1,7 +1,8 @@
 ﻿@page "/PlayersStats"
 @namespace DartsScoreboard
 
-<h3>PlayerStats</h3>
+<MudButton Variant="Variant.Filled" Color="Color.Error" Style="margin-left: 20px; margin-top: 10px;" OnClick="GoBack">Back</MudButton>
+<MudText Typo="Typo.h4" Class="m-4">Players stats</MudText>
 
 @if (AllPlayers == null || !AllPlayers.Any())
 {
@@ -43,5 +44,10 @@ else
     {
         await _UserPersistence.RemoveUser(playerId);
         AllPlayers = await _UserPersistence.GetAllUsers();
+    }
+
+    private void GoBack()
+    {
+        NavManager.NavigateTo("/");
     }
 }

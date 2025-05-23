@@ -42,6 +42,7 @@ public class UserStats
 public class OldGamesStats
 {
     public string GameCode { get; set; }
+    public int GameStartingScore { get; set; }
     public double OldThreeDartAverage { get; set; }
     public double OldCheckoutPercentage { get; set; }
     public double OldTotalDartsThrown { get; set; }

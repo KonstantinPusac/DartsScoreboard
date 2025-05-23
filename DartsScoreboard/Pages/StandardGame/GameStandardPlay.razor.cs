@@ -766,6 +766,7 @@ namespace DartsScoreboard
             existingUser.GameHistory.Add(new OldGamesStats
             {
                 GameCode = GameCode,
+                GameStartingScore = StartingScore,
                 OldThreeDartAverage = user.Stats.ThreeDartAverage,
                 OldCheckoutPercentage = user.Stats.CheckoutPercentage,
                 OldTotalDartsThrown = user.Stats.TotalDartsThrown,
@@ -1082,6 +1083,10 @@ namespace DartsScoreboard
                     }
                     break;
             }
+        }
+        private void GoBack()
+        {
+            NavManager.NavigateTo("/gamesStandard");
         }
 
         public KeyboardParameters KeyboardParams = new()
