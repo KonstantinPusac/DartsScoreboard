@@ -14,7 +14,7 @@ public partial class KeyboardTest
             new List<KeyboardKey>
             {
                 new KeyboardKey { Text = "1", Value = "1", HitCount=()=>2},
-                new KeyboardKey { Text = "2", Value = "2",IsDisabled=()=>true, HitCount=() => 1 },
+                new KeyboardKey { Text = "2", Value = "2",IsDisabled=()=>true, HitCount=() => 1, Points=() => 20 },
                 new KeyboardKey { Text = "3", Value = "3",IsDisabled=()=>true },
                 new KeyboardKey { Text = "4", Value = "4" , IsDisabled =() => true},
                 new KeyboardKey { Text = "5", Value = "5" },

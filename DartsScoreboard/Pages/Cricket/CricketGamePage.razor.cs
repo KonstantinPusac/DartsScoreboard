@@ -25,20 +25,20 @@ public partial class CricketGamePage
             {
                 new List<KeyboardKey>
                 {
-                    new KeyboardKey { Text = "20", Value = "20",IsDisabled=()=>IsDisabledKey("20"),HitCount=()=>GetHitCount("20") },
-                    new KeyboardKey { Text = "19", Value = "19" ,IsDisabled=()=>IsDisabledKey("19"),HitCount=()=>GetHitCount("19")},
-                    new KeyboardKey { Text = "18", Value = "18",IsDisabled=()=>IsDisabledKey("18"),HitCount=()=>GetHitCount("18") },
+                    new KeyboardKey { Text = "20", Value = "20",IsDisabled=()=>IsDisabledKey("20"),HitCount=()=>GetHitCount("20"),Points=()=>GetPoints("20") },
+                    new KeyboardKey { Text = "19", Value = "19" ,IsDisabled=()=>IsDisabledKey("19"),HitCount=()=>GetHitCount("19"),Points=()=>GetPoints("19")},
+                    new KeyboardKey { Text = "18", Value = "18",IsDisabled=()=>IsDisabledKey("18"),HitCount=()=>GetHitCount("18") ,Points=()=>GetPoints("18")},
                 },
                 new List<KeyboardKey>
                 {
-                    new KeyboardKey { Text = "17", Value = "17",IsDisabled=()=>IsDisabledKey("17") ,HitCount=()=>GetHitCount("17")},
-                    new KeyboardKey { Text = "16", Value = "16" ,IsDisabled=()=>IsDisabledKey("16"), HitCount =() => GetHitCount("16")},
-                    new KeyboardKey { Text = "15", Value = "15",IsDisabled=()=>IsDisabledKey("15") , HitCount =() => GetHitCount("15")},
+                    new KeyboardKey { Text = "17", Value = "17",IsDisabled=()=>IsDisabledKey("17") ,HitCount=()=>GetHitCount("17"),Points=()=>GetPoints("17")},
+                    new KeyboardKey { Text = "16", Value = "16" ,IsDisabled=()=>IsDisabledKey("16"), HitCount =() => GetHitCount("16"), Points =() => GetPoints("16")},
+                    new KeyboardKey { Text = "15", Value = "15",IsDisabled=()=>IsDisabledKey("15") , HitCount =() => GetHitCount("15"), Points =() => GetPoints("15")},
                 },
                 new List<KeyboardKey>
                 {
                     new KeyboardKey { Text = "⌫", Value = "BACKSPACE" },
-                    new KeyboardKey { Text = "BULL", Value = "BULL",IsDisabled=()=>IsDisabledKey("BULL") , HitCount =() => GetHitCount("BULL")},
+                    new KeyboardKey { Text = "BULL", Value = "BULL",IsDisabled=()=>IsDisabledKey("BULL") , HitCount =() => GetHitCount("BULL"), Points =() => GetPoints("BULL")},
                     new KeyboardKey { Text = "↵", Value = "ENTER" },
                 },
             }
@@ -49,6 +49,10 @@ public partial class CricketGamePage
         return Players.Where(x => x != PlayerOnTurn).Any(x => (x.Scores.FirstOrDefault(s => s.Target == key)?.Count ?? 0) < 3);
     }
     private int GetHitCount(string key)
+    {
+        return CurrentThrowScore.Where(x => x.Target == key).Sum(x => x.Count);
+    }
+    private int GetPoints(string key)
     {
         return CurrentThrowScore.Where(x => x.Target == key).Sum(x => x.Count);
     }

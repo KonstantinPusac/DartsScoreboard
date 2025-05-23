@@ -10,6 +10,7 @@
                 {
                     bool isDisabled = keyboardKey.IsDisabled?.Invoke() ?? false;
                     bool isSelected = (keyboardKey.HitCount?.Invoke() ?? 0) > 0;
+                    bool hasPoints = (keyboardKey.Points?.Invoke() ?? 0) > 0;
 
 
                     <button class="@GetClass(keyboardKey, isDisabled, isSelected)"
@@ -20,7 +21,14 @@
                         {
                             
                             <div class="hit-count">
-                                +@keyboardKey.HitCount
+                                +@keyboardKey.HitCount?.Invoke()
+                            </div>
+                        }
+                        @if (hasPoints)
+                        {
+                            
+                            <div class="point">
+                                @keyboardKey.Points?.Invoke()
                             </div>
                         }
                         @keyboardKey.Text
