@@ -22,9 +22,9 @@
                 {
                     <tr>
                         <td>@player.Name</td>
-                        @foreach (var score in player.Scores)
+                        @foreach (var score in player.Scores.Values)
                         {
-                            <td>@score.Count</td>
+                            <td>@score</td>
                         }
                         <td>@player.Points</td>
                     </tr>

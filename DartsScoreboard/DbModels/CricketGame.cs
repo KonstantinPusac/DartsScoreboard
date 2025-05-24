@@ -38,38 +38,8 @@ public class CricketPlayer
 }
 public class CricketThrow
 {
-    public List<CricketNumberScore> Score => GetScore();
-    private List<CricketNumberScore> GetScore()
-    {
-        if (IsEveryThrowIndiviualy)
-        {
-            var score = new List<CricketNumberScore>();
+    public List<CricketNumberScore> Score { get; set; }
 
-            if (FirstDart == null)
-                return score;
-            if (!FirstDart.IsMiss)
-                score.Add(new CricketNumberScore { Count = FirstDart.Count!.Value, Target = FirstDart.Target! });
-
-            if (SecondDart == null)
-                return score;
-            if (!SecondDart.IsMiss)
-                score.Add(new CricketNumberScore { Count = SecondDart.Count!.Value, Target = SecondDart.Target! });
-
-            if (ThirdDart == null)
-                return score;
-            if (!ThirdDart.IsMiss)
-                score.Add(new CricketNumberScore { Count = SecondDart.Count!.Value, Target = SecondDart.Target! });
-            return score;
-        }
-        return InputScore;
-    }
-
-    public List<CricketNumberScore> InputScore { get; set; }
-    public bool IsEveryThrowIndiviualy { get; set; }
-
-    public CricketDartThrow? FirstDart { get; set; }
-    public CricketDartThrow? SecondDart { get; set; }
-    public CricketDartThrow? ThirdDart { get; set; }
 }
 public class CricketDartThrow
 {
