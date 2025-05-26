@@ -1,0 +1,55 @@
+﻿@page "/PlayerAllGames/{playerId:int}"
+@namespace DartsScoreboard
+
+@if (Player == null)
+{
+	<p>Loading player...</p>
+}
+else
+{
+
+	@if (Player.GameHistory != null && Player.GameHistory.Any())
+	{
+		<table class="m-4 table table-striped" style="margin-left: 20px; margin-right: 20px;max-width: 95%;">
+			<thead>
+				<tr>
+					<th>Date</th>
+					<th>Starting Score</th>
+					<th>3-Dart Avg</th>
+					<th>Checkout %</th>
+					<th>Total Darts</th>
+					<th>Total Doubles</th>
+				</tr>
+			</thead>
+			<tbody>
+				@foreach (var game in Player.GameHistory.OrderByDescending(g => g.Timestamp))
+				{
+					<tr>
+						<td>@game.Timestamp.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</td>
+					<td>@game.GameStartingScore</td>
+					<td>@game.OldThreeDartAverage.ToString("F2")</td>
+					<td>@game.OldCheckoutPercentage.ToString("F2")%</td>
+					<td>@game.OldTotalDartsThrown</td>
+					<td>@game.OldNumOfDoublesThrown</td>
+				</tr>
+				}
+			</tbody>
+		</table>
+	}
+	else
+	{
+		<p>No previous games found.</p>
+	}
+}
+
+
+@code{
+	[Parameter] public int playerId { get; set; }
+	[Inject] public IUserPersistence _UserPersistence { get; set; } = default!;
+	public User? Player { get; set; } = new();
+
+	protected override async Task OnInitializedAsync()
+	{
+		Player = await _UserPersistence.GetUser(playerId);
+	}
+}

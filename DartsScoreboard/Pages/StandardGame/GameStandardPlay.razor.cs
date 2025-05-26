@@ -584,6 +584,7 @@ namespace DartsScoreboard
                     // Darts per leg
                     currentPlayer.Stats.DartsPerLeg = (double)(PlayerScores[currentPlayer.Id].PlayerThrowsLeg / (double)NumOfLegs);
                     currentPlayer.Stats.TotalDartsThrown += PlayerScores[currentPlayer.Id].PlayerThrowsLeg;
+                    currentPlayer.Stats.TotalDoublesThrown += currentPlayer.Stats.NumOfDoublesThrown;
 
                     // Check best number of darts thrown leg
                     if (currentPlayer.Stats.BestNumOfDartsThrown == 0 || currentPlayer.Stats.BestNumOfDartsThrown > PlayerScores[currentPlayer.Id].PlayerThrowsLeg)
@@ -621,6 +622,7 @@ namespace DartsScoreboard
                     // Darts per leg
                     currentPlayer.Stats.DartsPerLeg = (double)(PlayerScores[currentPlayer.Id].PlayerThrowsLeg / (double)NumOfLegs);
                     currentPlayer.Stats.TotalDartsThrown += PlayerScores[currentPlayer.Id].PlayerThrowsLeg;
+                    currentPlayer.Stats.TotalDoublesThrown += currentPlayer.Stats.NumOfDoublesThrown;
 
                     // Check best number of darts thrown leg
                     if (currentPlayer.Stats.BestNumOfDartsThrown == 0 || currentPlayer.Stats.BestNumOfDartsThrown > PlayerScores[currentPlayer.Id].PlayerThrowsLeg)
@@ -656,6 +658,7 @@ namespace DartsScoreboard
                 {
                     WinnerPopup = true;
 
+                    currentPlayer.Stats.NumOfDoublesThrown = currentPlayer.Stats.NumOfDoublesThrown;
                     await UpdateUserStats(currentPlayer);
                     await _StandardGamePersistence.Remove(GameCode);
                     return;
@@ -740,6 +743,8 @@ namespace DartsScoreboard
             current.ThreeDartAverage = (current.ThreeDartAverage * current.TotalDartsThrown + recent.ThreeDartAverage * recent.TotalDartsThrown) / totalDartsThrown;
             current.TotalDartsThrown = totalDartsThrown;
 
+            current.TotalDoublesThrown = current.NumOfDoublesThrown + recent.NumOfDoublesThrown;
+
             // High score hits
             foreach (var kvp in user.Stats.HighScoreHits)
             {
@@ -771,6 +776,7 @@ namespace DartsScoreboard
                 OldThreeDartAverage = user.Stats.ThreeDartAverage,
                 OldCheckoutPercentage = user.Stats.CheckoutPercentage,
                 OldTotalDartsThrown = user.Stats.TotalDartsThrown,
+                OldNumOfDoublesThrown = user.Stats.TotalDoublesThrown,
                 Timestamp = DateTime.UtcNow
             });
 
@@ -849,6 +855,7 @@ namespace DartsScoreboard
                 player.Stats.BestThreeDartLegAverage = 0;
                 player.Stats.DartsPerLeg = 0;
                 player.Stats.TotalDartsThrown = 0;
+                player.Stats.TotalDoublesThrown = 0;
                 player.Stats.BestThreeDartLegAverage = 0;
 
 
@@ -918,9 +925,24 @@ namespace DartsScoreboard
 
                 if (int.TryParse(InputScore, out int score))
                 {
-                    InputRemainingScore = score;
-                    InputScore = (PlayerScores[currentPlayer.Id].PlayerScore - InputRemainingScore).ToString();
-                    await SubmitScore();
+                    if (score < 181)
+                    {
+                        InputRemainingScore = score;
+                        InputScore = (PlayerScores[currentPlayer.Id].PlayerScore - InputRemainingScore).ToString();
+                        await SubmitScore();
+                    }
+                    else
+                    {
+                        // Invalid score
+                        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomCenter;
+                        Snackbar.Add("Invalid score", Severity.Error, options =>
+                        {
+                            options.RequireInteraction = false;
+                            options.HideIcon = false;
+                            options.VisibleStateDuration = 500;
+                        });
+                        InputScore = "";
+                    }
                 }
             }
             else if (key.Value == "UNDO")

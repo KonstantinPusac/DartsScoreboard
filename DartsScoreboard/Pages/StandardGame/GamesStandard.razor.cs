@@ -134,7 +134,8 @@ namespace DartsScoreboard
                             GameCode = gameCode,
                             OldThreeDartAverage = 0,
                             OldCheckoutPercentage = 0,
-                            OldTotalDartsThrown = 0
+                            OldTotalDartsThrown = 0, 
+                            OldNumOfDoublesThrown = 0
                         }
                     }
 

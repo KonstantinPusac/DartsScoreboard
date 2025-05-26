@@ -14,16 +14,19 @@ public class UserStats
     // Additional statistics
     public double DartsPerLeg { get; set; }
     public double TotalDartsThrown { get; set; }
+    public double TotalDoublesThrown { get; set; }
 
     // Basic statistics
     public double ThreeDartAverage { get; set; }
     public double ThreeDartLegAverage { get; set; }
     public double BestThreeDartLegAverage { get; set; }
+
     public double BestNumOfDartsThrown { get; set; }
     public double WorstNumOfDartsThrown { get; set; }
-    public double FirstNineAverage { get; set; }
+
     public int NumOfDoublesThrown { get; set; }
     public double CheckoutPercentage { get; set; }
+
     public int HighestFinish { get; set; }
     public int HighestScore { get; set; }
     public Dictionary<string, int> HighScoreHits { get; set; } = new()
@@ -46,5 +49,6 @@ public class OldGamesStats
     public double OldThreeDartAverage { get; set; }
     public double OldCheckoutPercentage { get; set; }
     public double OldTotalDartsThrown { get; set; }
+    public double OldNumOfDoublesThrown { get; set; }
     public DateTime Timestamp { get; set; } = DateTime.UtcNow;
 }
