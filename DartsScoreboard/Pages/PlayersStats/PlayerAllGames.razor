@@ -1,6 +1,7 @@
 ﻿@page "/PlayerAllGames/{playerId:int}"
 @namespace DartsScoreboard
 
+<MudButton Variant="Variant.Filled" Color="Color.Error" Style="margin-left: 20px; margin-top: 10px;" OnClick="GoBack">Back</MudButton>
 @if (Player == null)
 {
 	<p>Loading player...</p>
@@ -46,10 +47,17 @@ else
 @code{
 	[Parameter] public int playerId { get; set; }
 	[Inject] public IUserPersistence _UserPersistence { get; set; } = default!;
+	[Inject] public NavigationManager NavManager { get; set; } = default!;
+
 	public User? Player { get; set; } = new();
 
 	protected override async Task OnInitializedAsync()
 	{
 		Player = await _UserPersistence.GetUser(playerId);
+	}
+
+	private void GoBack()
+	{
+		NavManager.NavigateTo($"/PlayerStatistics/{playerId}");
 	}
 }

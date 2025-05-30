@@ -1,5 +1,5 @@
-﻿@page "/PlayerStatistics/{playerId:int}"
-@namespace DartsScoreboard
+﻿@namespace DartsScoreboard
+@page "/PlayerStatistics/{playerId:int}"
 
 <MudButton Variant="Variant.Filled" Color="Color.Error" Style="margin-left: 20px; margin-top: 10px;" OnClick="GoBack">Back</MudButton>
 <MudText Typo="Typo.h4" Class="m-4">Player stats</MudText>
@@ -22,14 +22,28 @@ else
 		</MudCardContent>
 	</MudCard>
 	<MudPaper Class="m-4 doc-section-component-container"
-			  Style="display: flex; justify-content: center; align-items: center;">
+			  Style="display: flex; flex-direction: column; align-items: center;">
+
+		<MudToggleGroup T="string"
+						SelectionMode="SelectionMode.SingleSelection"
+						Value="_startingScoreValue"
+						ValueChanged="OnScoreChanged"
+						Color="Color.Primary"
+						CheckMark
+						FixedContent
+						Class="m-4">
+			<MudToggleItem Value=@("301") Text="301" />
+			<MudToggleItem Value=@("501") Text="501" />
+			<MudToggleItem Value=@("701") Text="701" />
+		</MudToggleGroup>
+
 		<MudChart ChartType="ChartType.Line"
 				  ChartSeries="@ChartData"
 				  @bind-SelectedIndex="_index"
 				  XAxisLabels="@ChartLabels"
 				  ChartOptions="@_options"
 				  AxisChartOptions="_axisChartOptions"
-				  Style="max-width: 600px; width: 100%;" />
+				  Style="margin-left: 90px; max-width: 100%" />
 	</MudPaper>
 
 	@if (Player.GameHistory != null && Player.GameHistory.Any())
@@ -37,7 +51,7 @@ else
 		<MudText Typo="Typo.h4" Class="m-4">Game history</MudText>
 
 		<MudStack class="m-4">
-			<MudToggleGroup T="string" SelectionMode="SelectionMode.SingleSelection" Value="_value1" ValueChanged="OnDateChanged" Color="Color.Primary" CheckMark FixedContent>
+			<MudToggleGroup T="string" SelectionMode="SelectionMode.SingleSelection" Value="_daysValue" ValueChanged="OnDateChanged" Color="Color.Primary" CheckMark FixedContent>
 				<MudToggleItem Value="@("7")" Text="7 days" />
 				<MudToggleItem Value="@("30")" Text="30 days" />
 				<MudToggleItem Value="@("90")" Text="90 days" />
@@ -77,267 +91,4 @@ else
 	{
 		<p>No previous games found.</p>
 	}
-}
-
-@code {
-	[Parameter] public int playerId { get; set; }
-	[Inject] public NavigationManager NavManager { get; set; } = default!;
-	[Inject] public IUserPersistence _UserPersistence { get; set; } = default!;
-
-	public User? Player { get; set; }
-
-	// Select slider
-	private string _value1 = "90";
-
-	// Stats
-	public double TotalThreeDartAverage = 0.0;
-	public double TotalCheckoutPercentage = 0.0;
-	public double TotalDartsPerLeg = 0.0;
-	public double BestThreeDartLegAverage = 0.0;
-	public double TotalDoublesThrown = 0.0;
-
-	// Chart data
-	private string[] ChartLabels = Array.Empty<string>(); // X-axis labels for the chart
-	public List<ChartSeries> ChartData { get; set; } = new(); // Y-axis series
-
-	private int _index = -1;
-	private ChartOptions _options = new ChartOptions();
-	private AxisChartOptions _axisChartOptions = new AxisChartOptions();
-
-	protected override async Task OnInitializedAsync()
-	{
-		Player = await _UserPersistence.GetUser(playerId);
-
-		// Initialize the stats
-		_value1 = "90";
-		RecalculateStats();
-		GenerateThreeDartAverageChart();
-	}
-
-	private void AllGamesPage()
-	{
-		NavManager.NavigateTo($"/PlayerAllGames/{playerId}");
-	}
-
-	private void GoBack()
-	{
-		NavManager.NavigateTo("/PlayersStats");
-	}
-
-	private void GenerateThreeDartAverageChart()
-	{
-		if (Player?.GameHistory == null || !Player.GameHistory.Any())
-			return;
-
-		var games = Player.GameHistory
-			.OrderBy(g => g.Timestamp) // oldest to newest
-			.ToList();
-
-		ChartLabels = games
-			.Select(g => g.Timestamp.ToLocalTime().ToString("dd/MM"))
-			.ToArray();
-
-		var averages = games
-			.Select(g => g.OldThreeDartAverage)
-			.ToArray(); // MudChart expects double[]
-
-		ChartData = new List<ChartSeries>
-		{
-			new ChartSeries
-			{
-				Name = "3 dart average",
-				Data = averages,
-			}
-		};
-	}
-
-	private void OnDateChanged(string value)
-	{
-		_value1 = value;
-		RecalculateStats();
-	}
-	private void RecalculateStats()
-	{
-		if (_value1 == "7")
-		{
-			// Logic for 7 days
-			var sevenDaysAgo = DateTime.UtcNow.AddDays(-7);
-
-			if (Player == null || Player.GameHistory == null)
-			{
-				return;
-			}
-
-			var last7DaysGames = Player.GameHistory.Where(g => g.Timestamp >= sevenDaysAgo).ToList();
-
-			double averageUp = 0;
-			double averageDown = 0;
-			double checkoutUp = 0;
-			double checkoutDown = 0;
-			double totalDartsThrown = 0;
-			double numberOfGames = last7DaysGames.Count;
-
-			foreach (var game in last7DaysGames)
-			{
-				averageUp += game.OldThreeDartAverage * game.OldTotalDartsThrown;
-				averageDown += game.OldTotalDartsThrown;
-
-				checkoutUp += (game.OldCheckoutPercentage / 100.0) * game.OldNumOfDoublesThrown;
-				checkoutDown += game.OldNumOfDoublesThrown;
-
-				totalDartsThrown += game.OldTotalDartsThrown;
-
-				// Best three dart leg average
-				if (game.OldThreeDartAverage > BestThreeDartLegAverage)
-				{
-					BestThreeDartLegAverage = game.OldThreeDartAverage;
-				}
-			}
-
-			TotalThreeDartAverage = averageDown > 0 ? averageUp / averageDown : 0;
-			TotalCheckoutPercentage = checkoutDown > 0 ? (checkoutUp / checkoutDown) * 100.0 : 0;
-			TotalDartsPerLeg = numberOfGames > 0 ? totalDartsThrown / numberOfGames : 0;
-		}
-		else if (_value1 == "30")
-		{
-			// Logic for 30 days
-			var thirtyDaysAgo = DateTime.UtcNow.AddDays(-30);
-			if (Player == null || Player.GameHistory == null)
-			{
-				return;
-			}
-			var last30DaysGames = Player.GameHistory
-				.Where(g => g.Timestamp >= thirtyDaysAgo)
-				.ToList();
-			double averageUp = 0;
-            double averageDown = 0;
-			double checkoutUp = 0;
-            double checkoutDown = 0;
-			double totalDartsThrown = 0;
-			double numberOfGames = last30DaysGames.Count;
-			foreach (var game in last30DaysGames)
-			{
-				averageUp += game.OldThreeDartAverage * game.OldTotalDartsThrown;
-				averageDown += game.OldTotalDartsThrown;
-
-				checkoutUp += (game.OldCheckoutPercentage / 100.0) * game.OldNumOfDoublesThrown;
-				checkoutDown += game.OldNumOfDoublesThrown;
-
-				totalDartsThrown += game.OldTotalDartsThrown;
-				// Best three dart leg average
-				if (game.OldThreeDartAverage > BestThreeDartLegAverage)
-				{
-					BestThreeDartLegAverage = game.OldThreeDartAverage;
-				}
-			}
-            TotalThreeDartAverage = averageDown > 0 ? averageUp / averageDown : 0;
-			TotalCheckoutPercentage = checkoutDown > 0 ? (checkoutUp / checkoutDown) * 100.0 : 0;
-			TotalDartsPerLeg = numberOfGames > 0 ? totalDartsThrown / numberOfGames : 0;
-		}
-		else if (_value1 == "90")
-		{
-			// Logic for 90 days
-            var ninetyDaysAgo = DateTime.UtcNow.AddDays(-90);
-			if (Player == null || Player.GameHistory == null)
-			{
-				return;
-			}
-            var last90DaysGames = Player.GameHistory
-                .Where(g => g.Timestamp >= ninetyDaysAgo)
-                .ToList();
-			double averageUp = 0;
-            double averageDown = 0;
-			double checkoutUp = 0;
-            double checkoutDown = 0;
-			double totalDartsThrown = 0;
-			double numberOfGames = last90DaysGames.Count;
-			foreach (var game in last90DaysGames)
-			{
-				averageUp += game.OldThreeDartAverage * game.OldTotalDartsThrown;
-				averageDown += game.OldTotalDartsThrown;
-
-				checkoutUp += (game.OldCheckoutPercentage / 100.0) * game.OldNumOfDoublesThrown;
-				checkoutDown += game.OldNumOfDoublesThrown;
-
-				totalDartsThrown += game.OldTotalDartsThrown;
-				// Best three dart leg average
-				if (game.OldThreeDartAverage > BestThreeDartLegAverage)
-				{
-					BestThreeDartLegAverage = game.OldThreeDartAverage;
-				}
-			}
-			TotalThreeDartAverage = averageDown > 0 ? averageUp / averageDown : 0;
-			TotalCheckoutPercentage = checkoutDown > 0 ? (checkoutUp / checkoutDown) * 100.0 : 0;
-			TotalDartsPerLeg = numberOfGames > 0 ? totalDartsThrown / numberOfGames : 0;
-		}
-		else if (_value1 == "365")
-		{
-			// Logic for 1 year
-			var oneYearAgo = DateTime.UtcNow.AddDays(-365);
-			if (Player == null || Player.GameHistory == null)
-			{
-				return;
-			}
-            var lastYearGames = Player.GameHistory
-                .Where(g => g.Timestamp >= oneYearAgo)
-                .ToList();
-			double averageUp = 0;
-            double averageDown = 0;
-			double checkoutUp = 0;
-            double checkoutDown = 0;
-            double totalDartsThrown = 0;
-			double numberOfGames = lastYearGames.Count;
-			foreach (var game in lastYearGames)
-			{
-				averageUp += game.OldThreeDartAverage * game.OldTotalDartsThrown;
-				averageDown += game.OldTotalDartsThrown;
-
-				checkoutUp += (game.OldCheckoutPercentage / 100.0) * game.OldNumOfDoublesThrown;
-				checkoutDown += game.OldNumOfDoublesThrown;
-
-				totalDartsThrown += game.OldTotalDartsThrown;
-				// Best three dart leg average
-				if (game.OldThreeDartAverage > BestThreeDartLegAverage)
-				{
-					BestThreeDartLegAverage = game.OldThreeDartAverage;
-				}
-			}
-			TotalThreeDartAverage = averageDown > 0 ? averageUp / averageDown : 0;
-			TotalCheckoutPercentage = checkoutDown > 0 ? (checkoutUp / checkoutDown) * 100.0 : 0;
-			TotalDartsPerLeg = numberOfGames > 0 ? totalDartsThrown / numberOfGames : 0;
-		}
-		else if (_value1 == "allTime")
-		{
-			// Logic for all time
-			if (Player == null || Player.GameHistory == null)
-			{
-				return;
-			}
-			var allTimeGames = Player.GameHistory.ToList();
-			double averageUp = 0;
-			double averageDown = 0;
-			double checkoutUp = 0;
-			double checkoutDown = 0;
-			double totalDartsThrown = 0;
-			double numberOfGames = allTimeGames.Count;
-			foreach (var game in allTimeGames)
-			{
-				averageUp += game.OldThreeDartAverage * game.OldTotalDartsThrown;
-				averageDown += game.OldTotalDartsThrown;
-
-				checkoutUp += (game.OldCheckoutPercentage / 100.0) * game.OldNumOfDoublesThrown;
-				checkoutDown += game.OldNumOfDoublesThrown;
-
-				totalDartsThrown += game.OldTotalDartsThrown;
-				// Best three dart leg average
-				if (game.OldThreeDartAverage > BestThreeDartLegAverage)
-				{
-					BestThreeDartLegAverage = game.OldThreeDartAverage;
-				}
-			}
-			TotalThreeDartAverage = averageDown > 0 ? averageUp / averageDown : 0;
-			TotalCheckoutPercentage = checkoutDown > 0 ? (checkoutUp / checkoutDown) * 100.0 : 0;
-			TotalDartsPerLeg = numberOfGames > 0 ? totalDartsThrown / numberOfGames : 0;
-		}
-    }
 }

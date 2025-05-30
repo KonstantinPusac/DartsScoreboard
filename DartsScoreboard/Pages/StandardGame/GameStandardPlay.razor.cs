@@ -16,6 +16,7 @@ namespace DartsScoreboard
         public int PlayerSets { get; set; }
         public int PlayerLegs { get; set; }
         public int PlayerCollectedScore { get; set; }
+        public int LastThrow { get; set; }
     }
     public class RoundSnapshot
     {
@@ -179,6 +180,13 @@ namespace DartsScoreboard
             if (Players == null || Players.Count == 0 || CurrentPlayerIndex >= Players.Count)
                 return 0;
             return PlayerScores[Players[CurrentPlayerIndex].Id].PlayerThrows;
+        }
+
+        private int GetLastThrow()
+        {
+            if (Players == null || Players.Count == 0 || CurrentPlayerIndex >= Players.Count)
+                return 0;
+            return PlayerScores[Players[CurrentPlayerIndex].Id].LastThrow;
         }
 
         private void PlayerStatsToPlayers(List<User> savedStats)
@@ -551,6 +559,7 @@ namespace DartsScoreboard
             }
 
             PlayerScores[currentPlayer.Id].PlayerScore -= score;
+            PlayerScores[currentPlayer.Id].LastThrow = score;
             UpdateHighScoreHits(currentPlayer, score);
 
             // Loading other player scores
@@ -690,7 +699,23 @@ namespace DartsScoreboard
 
             await SaveGameAsync();
         }
+        private int GetLastThrowFromStack(int playerId)
+        {
+            if (UndoStack.TryPeek(out var snapshot))
+            {
+                if (snapshot.PlayerStates.TryGetValue(playerId, out var state))
+                {
+                    return state.LastThrow; // If you already added LastThrow into PlayerScoreInfo
+                }
 
+                if (int.TryParse(snapshot.InputScore, out var throwScore))
+                {
+                    return throwScore;
+                }
+            }
+
+            return 0;
+        }
         private async Task UndoMove()
         {
             if (UndoStack.TryPop(out var snapshot))
@@ -1371,14 +1396,14 @@ namespace DartsScoreboard
             { "123", new List<string> { "T19", "T16", "D9" } },
             { "122", new List<string> { "T18", "T18", "D7" } },
             { "121", new List<string> { "T20", "T11", "D14" } },
-            { "120", new List<string> { "20", "T20", "D20" } },
+            { "120", new List<string> { "T20", "T20", "D20" } },
             { "119", new List<string> { "T19", "T12", "D13" } },
-            { "118", new List<string> { "20", "18", "D20" } },
-            { "117", new List<string> { "20", "17", "D20" } },
-            { "116", new List<string> { "20", "16", "D20" } },
-            { "115", new List<string> { "19", "18", "D20" } },
-            { "114", new List<string> { "20", "14", "D20" } },
-            { "113", new List<string> { "20", "13", "D20" } },
+            { "118", new List<string> { "T20", "18", "D20" } },
+            { "117", new List<string> { "T20", "17", "D20" } },
+            { "116", new List<string> { "T20", "16", "D20" } },
+            { "115", new List<string> { "T19", "18", "D20" } },
+            { "114", new List<string> { "T20", "14", "D20" } },
+            { "113", new List<string> { "T20", "13", "D20" } },
             { "112", new List<string> { "T20", "12", "D20" } },
             { "111", new List<string> { "T20", "19", "D16" } },
             { "110", new List<string> { "T20", "10", "D20" } },
