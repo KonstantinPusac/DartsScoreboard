@@ -1,6 +1,8 @@
 ﻿@namespace DartsScoreboard
 @page "/saved-games"
 
+<MudButton Variant="Variant.Filled" Color="Color.Error" Style="margin-left: 20px; margin-top: 10px;" OnClick="GoBack">Back</MudButton>
+
 @if (SavedGamesList == null || !SavedGamesList.Any())
 {
     <div style="display:flex; justify-content:center; align-items:center; height:100vh;">

@@ -1,0 +1,29 @@
+﻿.main-container {
+    padding: 20px 20px;
+}
+.input-area {
+    display: flex;
+    flex-direction: column;
+    height: 50vh; /* Half of the screen height */
+    justify-content: space-between;
+    margin-top: 20px;
+}
+.dart-input {
+    width: 60px;
+    height: 60px;
+    border: 2px solid gray;
+    margin: 0 8px;
+    font-size: 1.5rem;
+    text-align: center;
+    line-height: 60px;
+    border-radius: 8px;
+    background-color: #f8f9fa;
+    color: black;
+}
+.dart-input.active {
+    border-color: #007bff;
+    background-color: #e0f0ff;
+}
+.fixed-column {
+    width: 80px;
+}

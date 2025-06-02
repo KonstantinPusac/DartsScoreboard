@@ -1,0 +1,85 @@
+﻿@page "/checkoutPracticePlay/{playerId:int}"
+@namespace DartsScoreboard
+
+<h3>Practice</h3>
+
+<div class="main-container">
+    <MudPaper Class="p-4" Style="background-color:#e0f0ff">
+        <MudChipSet T="int" SelectedValue="@SelectedNumber" SelectedValueChanged="OnSelectedNumberChanged" SelectionMode="SelectionMode.SingleSelection">
+            <div class="d-flex justify-content-center flex-wrap gap-2 mb-2">
+                <MudChip Value="1" Color="Color.Primary">1</MudChip>
+                <MudChip Value="2" Color="Color.Primary">2</MudChip>
+                <MudChip Value="3" Color="Color.Primary">3</MudChip>
+                <MudChip Value="4" Color="Color.Primary">4</MudChip>
+                <MudChip Value="5" Color="Color.Primary">5</MudChip>
+                <MudChip Value="6" Color="Color.Primary">6</MudChip>
+                <MudChip Value="7" Color="Color.Primary">7</MudChip>
+                <MudChip Value="8" Color="Color.Primary">8</MudChip>
+                <MudChip Value="9" Color="Color.Primary">9</MudChip>
+                <MudChip Value="10" Color="Color.Primary">10</MudChip>
+                <MudChip Value="11" Color="Color.Primary">11</MudChip>
+            </div>
+            <div class="d-flex justify-content-center flex-wrap gap-2">
+                <MudChip Value="12" Color="Color.Primary">12</MudChip>
+                <MudChip Value="13" Color="Color.Primary">13</MudChip>
+                <MudChip Value="14" Color="Color.Primary">14</MudChip>
+                <MudChip Value="15" Color="Color.Primary">15</MudChip>
+                <MudChip Value="16" Color="Color.Primary">16</MudChip>
+                <MudChip Value="17" Color="Color.Primary">17</MudChip>
+                <MudChip Value="18" Color="Color.Primary">18</MudChip>
+                <MudChip Value="19" Color="Color.Primary">19</MudChip>
+                <MudChip Value="20" Color="Color.Primary">20</MudChip>
+                <MudChip Value="25" Color="Color.Primary">BULL</MudChip>
+            </div>
+        </MudChipSet>
+        <!-- Player info -->
+        <MudPaper Class="mt-4 p-4 mud-theme-primary">
+            @if (Player != null)
+            {
+                <MudText Typo="Typo.subtitle1" Align="Align.Center">@Player.Name</MudText>
+                <MudText Typo="Typo.h3" Align="Align.Center" Class="font-bold">@($"D{SelectedNumber}")</MudText>
+            }
+
+            <!-- Row 1: Miss / Hit -->
+            <div class="d-flex justify-content-center text-center mb-3" style="gap: 40px;">
+                <div class="d-flex flex-column align-items-center" style="width: 80px;">
+                    <MudText Typo="Typo.h3">@GetMisses()</MudText>
+                    <MudText Typo="Typo.subtitle1">Miss</MudText>
+                </div>
+                <div class="d-flex flex-column align-items-center" style="width: 80px;">
+                    <MudText Typo="Typo.h3">@GetHits()</MudText>
+                    <MudText Typo="Typo.subtitle1">Hit</MudText>
+                </div>
+            </div>
+
+            <!-- Row 2: Darts Thrown / Checkout % -->
+            <div class="d-flex justify-content-center text-center" style="gap: 40px;">
+                <div class="d-flex flex-column align-items-center" style="width: 80px;">
+                    <MudText Typo="Typo.h3">@GetDartsThrown()</MudText>
+                    <MudText Typo="Typo.subtitle1">Darts</MudText>
+                    <MudText Typo="Typo.subtitle1">Thrown</MudText>
+                </div>
+                <div class="d-flex flex-column align-items-center" style="width: 80px;">
+                    <MudText Typo="Typo.h3">@GetPercentage()</MudText>
+                    <MudText Typo="Typo.subtitle1">Checkout</MudText>
+                    <MudText Typo="Typo.subtitle1">%</MudText>
+                </div>
+            </div>
+        </MudPaper>
+    </MudPaper>
+    <div class="input-area">
+        <!-- Dart Input Squares -->
+        <MudStack Row="true" Spacing="2" Justify="Justify.Center">
+            <div class="d-flex justify-content-center mb-2">
+                <div class="dart-input @(DartIndex == 1 ? "active" : "")">@InputDartOne</div>
+                <div class="dart-input @(DartIndex == 2 ? "active" : "")">@InputDartTwo</div>
+                <div class="dart-input @(DartIndex == 3 ? "active" : "")">@InputDartThree</div>
+            </div>
+            <MudButton Class="mb-3" Style="height:60px" Variant="Variant.Filled" Color="Color.Primary" onclick="SubmitScore">Submit</MudButton>
+        </MudStack>
+
+        <!-- Keyboard -->
+        <Keyboard KeyboardParameters="KeyboardParams" KeyClick="HandleKey" />
+        <MudButton Class="m-4" Variant="Variant.Filled" Size="Size.Large" Color="Color.Tertiary" OnClick="EndSession">End Session</MudButton>
+    </div>
+</div>

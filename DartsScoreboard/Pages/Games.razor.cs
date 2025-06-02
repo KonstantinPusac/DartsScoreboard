@@ -22,5 +22,9 @@ namespace DartsScoreboard
         {
             navManager.NavigateTo("/cricket-setup");
         }
+        private void CheckoutPractice()
+        {
+            navManager.NavigateTo("/checkoutPractice");
+        }
     }
 }

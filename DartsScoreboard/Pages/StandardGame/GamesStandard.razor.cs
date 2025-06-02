@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using MudBlazor;
 
-
 namespace DartsScoreboard
 {
     public partial class GamesStandard
@@ -52,7 +51,10 @@ namespace DartsScoreboard
             CurrentErrorMessage = null;
             ErrorPopup = false;
         }
-
+        private void GoBack()
+        {
+            NavManager.NavigateTo("/games");
+        }
         private void OnUserSelected(ChangeEventArgs e)
         {
             if (int.TryParse(e.Value?.ToString(), out int id))

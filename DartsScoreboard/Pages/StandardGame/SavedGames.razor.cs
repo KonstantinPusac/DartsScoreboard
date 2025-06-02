@@ -22,7 +22,10 @@ namespace DartsScoreboard
         {
             NavManager.NavigateTo($"/gameStandardPlay/{code}");
         }
-
+        private void GoBack()
+        {
+            NavManager.NavigateTo("/gamesStandard");
+        }
         private async Task DeleteGame(string code)
         {
             await _StandardGamePersistence.Remove(code);
