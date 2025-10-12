@@ -1,4 +1,5 @@
 ﻿
+using DartsScoreboard.Models.CricketPracticeGame;
 using Microsoft.AspNetCore.Components;
 using System.Net.Http.Headers;
 
@@ -11,15 +12,16 @@ public partial class CricketGamePage
     [Inject] public NavigationManager _NavigationManager { get; set; }
     [Parameter] public string? gameCode { get; set; }
     public int Round { get; set; } = 1;
+    public bool Loaded { get; set; }
     public CricketGame Game { get; set; } = new();
     public List<CricketPlayerPresenter> Players { get; set; } = new();
     public KeyboardParameters KeyboardParameters { get; set; }
-    public CricketPlayerPresenter PlayerOnTurn { get; set; }
+    public int PlayerOnTurnIndex { get; set; } = 0; // index of player on turn in Players list
+    public CricketPlayerPresenter PlayerOnTurn => Players[PlayerOnTurnIndex]; // player on turn in current round
 
-    public int CurrentAllScoreIntex { get; set; } = 0;
-    public List<CricketGameThrowPresenter> AllScores { get; set; }
-    public List<CricketThrowScore> CurrentThrowScore { get; set; } = new();// in current round - max 9 elements
-    public List<PointsForPlayer> CurrentThrowPointsByPlayer { get; set; } = new();//in current round
+    public int _StackIndex { get; set; } = 0;
+    public List<CricketGameThrowPresenter> _Stack { get; set; } = new();
+    public CricketGameThrowPresenter CurrentThrow => PlayerOnTurn.CurrentThrow;// in current round - max 9 elements  
     protected override void OnInitialized()
     {
         KeyboardParameters = new KeyboardParameters
@@ -54,11 +56,11 @@ public partial class CricketGamePage
     }
     private int GetHitCount(string key)
     {
-        return CurrentThrowScore.Count(x => x.Target == key);
+        return CurrentThrow.Score.Count(x => x.Target == key);
     }
     private int GetPoints(string key)
     {
-        return GetTargetValue(key) * CurrentThrowScore.Count(x => x.Target == key && x.ArePoints);
+        return GetTargetValue(key) * CurrentThrow.Score.Count(x => x.Target == key && x.ArePoints);
     }
     protected override async Task OnParametersSetAsync()
     {
@@ -89,6 +91,7 @@ public partial class CricketGamePage
         }).ToList();
 
         ResolvePlayerOnTurn();
+        Loaded = true;
     }
 
     public async Task KeyboardClick(KeyboardKey keyboardKey)
@@ -96,12 +99,12 @@ public partial class CricketGamePage
 
         if (keyboardKey.Value == "BACKSPACE")
         {
-            if (CurrentThrowScore.Count == 0)
+            if (CurrentThrow.Score.Count == 0)
                 return;
-            var lastScore = CurrentThrowScore.Last();
+            var lastScore = CurrentThrow.Score.Last();
             var lastTargetValue = GetTargetValue(lastScore.Target);
-            CurrentThrowScore.Remove(lastScore);
-            var players = CurrentThrowPointsByPlayer.Where(x => x.Points.LastOrDefault() == lastTargetValue).ToList();
+            CurrentThrow.Score.Remove(lastScore);
+            var players = CurrentThrow.PointsForPlayers.Where(x => x.Points.LastOrDefault() == lastTargetValue).ToList();
             foreach (var player in players)
             {
                 player.Points.RemoveAt(player.Points.Count - 1);
@@ -110,7 +113,8 @@ public partial class CricketGamePage
         }
         if (keyboardKey.Value == "ENTER")
         {
-            await SaveThrow();
+            await AddThrow(CurrentThrow, false);
+            return;
         }
         if (IsDisabledKey(keyboardKey.Value))
         {
@@ -124,13 +128,14 @@ public partial class CricketGamePage
         int marks = GetPlayerOnTurnMarks(keyboardKey.Value);
         if (marks < 3)
         {
-            CurrentThrowScore.Add(new CricketThrowScore
+            CurrentThrow.Score.Add(new CricketThrowScore
             {
                 Target = keyboardKey.Value,
                 ArePoints = false,
             });
+            return;
         }
-        CurrentThrowScore.Add(new CricketThrowScore
+        CurrentThrow.Score.Add(new CricketThrowScore
         {
             Target = keyboardKey.Value,
             ArePoints = true,
@@ -138,27 +143,31 @@ public partial class CricketGamePage
         var playersToAddPoints = Players.Where(x => x != PlayerOnTurn && x.Scores.GetValueOrDefault(keyboardKey.Value, 0) < 3).ToList();
         foreach (var item in playersToAddPoints)
         {
-            var existing = CurrentThrowPointsByPlayer.FirstOrDefault(x => x.Player == item);
+            var existing = CurrentThrow.PointsForPlayers.FirstOrDefault(x => x.Player == item);
             if (existing != null)
                 existing.Points.Add(GetTargetValue(keyboardKey.Value));
             else
-                CurrentThrowPointsByPlayer.Add(new PointsForPlayer
+                CurrentThrow.PointsForPlayers.Add(new PointsForPlayer
                 {
                     Player = item,
                     Points = new List<int> { GetTargetValue(keyboardKey.Value) },
                 });
         }
     }
+    private string GetClass(CricketPlayerPresenter playerPresenter)
+    {
+        return PlayerOnTurn != playerPresenter ? "player-row" : "player-row player-row-selected";
+    }
     private int GetPlayerOnTurnMarks(string key)
     {
-        int marks = PlayerOnTurn.Scores.GetValueOrDefault(key, 0) + CurrentThrowScore.Count(x => x.Target == key);
+        int marks = PlayerOnTurn.Scores.GetValueOrDefault(key, 0) + CurrentThrow.Score.Count(x => x.Target == key);
         return marks > 3 ? 3 : marks;
     }
     private bool CanAddScore(string key)
     {
-        if (CurrentThrowScore.Count == 9)
+        if (CurrentThrow.Score.Count == 9)
             return false;
-        var targetGroups = CurrentThrowScore.GroupBy(x => x.Target).ToDictionary(x => x.Key, x => x.Count());
+        var targetGroups = CurrentThrow.Score.GroupBy(x => x.Target).ToDictionary(x => x.Key, x => x.Count());
 
         if (targetGroups.ContainsKey(key))
             targetGroups[key]++;
@@ -173,9 +182,9 @@ public partial class CricketGamePage
         return totalThrows <= 3;
     }
 
-    private async Task SaveThrow()
+    private async Task AddThrow(CricketGameThrowPresenter cricketThrow, bool isRedo)
     {
-        var scoreGroups = CurrentThrowScore.GroupBy(x => x.Target);
+        var scoreGroups = cricketThrow.Score.GroupBy(x => x.Target);
         PlayerOnTurn.Throws.Add(new CricketThrow()
         {
             Score = scoreGroups.Select(x => new CricketNumberScore
@@ -191,16 +200,111 @@ public partial class CricketGamePage
             else
                 PlayerOnTurn.Scores[item.Key] = item.Count();
         }
-        foreach (var player in CurrentThrowPointsByPlayer)
+        foreach (var player in cricketThrow.PointsForPlayers)
         {
             player.Player.Points += player.Points.Sum();
         }
+        CurrentThrow.Clear();
+        if (Players.Count == (PlayerOnTurnIndex + 1))
+        {
+            PlayerOnTurnIndex = 0;
+            Round++;
+        }
+        else
+        {
+            PlayerOnTurnIndex++;
+        }
+        //AddToStack(cricketThrow, false);
+        await Save();
     }
+    private void AddToStack(CricketGameThrowPresenter cricketThrow, bool isRedo)
+    {
+        if (isRedo)
+        {
+            return;
+        }
+        if (_Stack.Count > _StackIndex && !isRedo)
+            _Stack.RemoveRange(_StackIndex, _Stack.Count - _StackIndex);
+        _Stack.Add(cricketThrow);
+        _StackIndex++;
+    }
+    private async Task Save()
+    {
+        Game.Players = Players.Select(x => new CricketPlayer
+        {
+            UserId = x.UserId,
+            GuestName = x.Name,
+            Throws = x.Throws.Select(t => new CricketThrow
+            {
+                Score = t.Score.Select(s => new CricketNumberScore
+                {
+                    Target = s.Target,
+                    Count = s.Count,
+                }).ToList(),
+            }).ToList(),
+            Scores = x.Scores.Select(s => new CricketNumberScore
+            {
+                Target = s.Key,
+                Count = s.Value,
+            }).ToList(),
+            Points = x.Points,
+        }).ToList();
+        await _CricketPersistence.AddOrUpdate(Game);
+    }
+    /*   public async Task Redo()
+       {
+           if (_StackIndex == _Stack.Count)
+               return;
+           var stackItem = _Stack[_StackIndex++];
+           await AddThrow(stackItem, true);
+
+       }
+       private async Task Undo()
+       {
+           var @throw = _Stack[--_StackIndex];
+           var scoreGroups = @throw.Score.GroupBy(x => x.Target);
+           PlayerOnTurn.Throws.Add(new CricketThrow()
+           {
+               Score = scoreGroups.Select(x => new CricketNumberScore
+               {
+                   Count = x.Count(),
+                   Target = x.Key,
+               }).ToList()
+           });
+           foreach (var item in scoreGroups)
+           {
+               if (PlayerOnTurn.Scores.ContainsKey(item.Key))
+                   PlayerOnTurn.Scores[item.Key] += item.Count();
+               else
+                   PlayerOnTurn.Scores[item.Key] = item.Count();
+           }
+           foreach (var player in @throw.PointsForPlayers)
+           {
+               player.Player.Points += player.Points.Sum();
+           }
+           if (Players.Count == (PlayerOnTurnIndex + 1))
+           {
+               PlayerOnTurnIndex = 0;
+               Round++;
+           }
+           else
+           {
+               PlayerOnTurnIndex++;
+           }
+       }*/
 
     private void ResolvePlayerOnTurn()
     {
-        return;
-        throw new NotImplementedException();
+        int minThrowCount = Players.Min(x => x.Throws.Count);
+        for (int i = 0; i < Players.Count; i++)
+        {
+            if (Players[i].Throws.Count == minThrowCount)
+            {
+                PlayerOnTurnIndex = i;
+                return;
+            }
+        }
+        PlayerOnTurnIndex = 0;
     }
 
     private async Task EndOfGame()

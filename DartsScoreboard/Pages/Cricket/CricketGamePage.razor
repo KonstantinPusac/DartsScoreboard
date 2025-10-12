@@ -1,6 +1,8 @@
 ﻿@page "/cricket/{gameCode}"
 @namespace DartsScoreboard 
-
+@if(Loaded)
+{
+    
 <div class="container">
     <div class="score-table">
         <table>
@@ -20,7 +22,7 @@
             <tbody>
                 @foreach (var player in Players)
                 {
-                    <tr>
+                    <tr class="@GetClass(player)">
                         <td>@player.Name</td>
                         @foreach (var score in player.Scores.Values)
                         {
@@ -46,10 +48,11 @@
         </div>
 
         <div class="keyboard-wrapper">
-        keyboard
+        <Keyboard KeyboardParameters="KeyboardParameters" KeyClick="KeyboardClick"/>
         </div>
     </div>
 </div>
+}
 
 @code { 
     private int CurrentPlayerDeficit = 0;

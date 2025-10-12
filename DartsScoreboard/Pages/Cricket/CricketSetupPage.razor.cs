@@ -29,7 +29,9 @@ namespace DartsScoreboard
         }
         private async Task StartGame()
         {
-            PlayerService.SelectedPlayers.Add(new User { Name = "Guest 1", Id = -1 });
+            PlayerService.SelectedPlayers.Clear();
+            PlayerService.SelectedPlayers.Add(new User { Name = "Guest 1", });
+            PlayerService.SelectedPlayers.Add(new User { Name = "Guest 2", });
             string code = Guid.NewGuid().ToString();
             await _CricketPersistence.AddOrUpdate(
                  new CricketGame

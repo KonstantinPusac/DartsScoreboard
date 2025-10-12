@@ -10,7 +10,6 @@ public class CricketGame
 }
 public class CricketPlayer
 {
-    public int Id { get; set; }
     public int? UserId { get; set; }
     public string GuestName { get; set; }
     public List<CricketThrow> Throws { get; set; } = new();
@@ -25,16 +24,6 @@ public class CricketPlayer
         new CricketNumberScore(){Target="BULL",Count=0 },
     };
     public int Points { get; set; }
-
-
-    private int GetTargetValue(string target)
-    {
-        if (target.Equals("BULL", StringComparison.InvariantCultureIgnoreCase))
-            return 25;
-        if (int.TryParse(target, out int value))
-            return value;
-        return 0;
-    }
 }
 public class CricketThrow
 {

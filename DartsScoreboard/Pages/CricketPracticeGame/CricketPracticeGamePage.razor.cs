@@ -16,7 +16,7 @@ public partial class CricketPracticeGamePage
     public string CurrentTarget => Game.Targets[Round - 1];
     public List<CricketPracticePlayerPresenter> Players { get; set; } = new();
     public int PlayerOnTurnIndex { get; set; }
-    private int _StackIntex = 0;
+    private int _StackIndex = 0;
     private List<CricketPracticeGameThrowStack> _Stack = new();
     private bool _IsEndOfGame = false;
     public KeyboardParameters KeyboardParameters => CurrentTarget == "BULL" ? num2 : num3;
@@ -129,17 +129,22 @@ public partial class CricketPracticeGamePage
 
     private void AddToStack(int playerIndex, int targetIndex, int dart, int score, bool isRedo)
     {
-        if (_Stack.Count > _StackIntex && !isRedo)
-            _Stack.RemoveRange(_StackIntex, _Stack.Count - _StackIntex);
+        if (isRedo)
+        {
+            _StackIndex++;
+            return;
+        }
+        if (_Stack.Count > _StackIndex)
+            _Stack.RemoveRange(_StackIndex, _Stack.Count - _StackIndex);
         _Stack.Add(new CricketPracticeGameThrowStack { Dart = dart, PlayerIndex = playerIndex, TargetIntex = targetIndex, Score = score });
-        _StackIntex++;
+        _StackIndex++;
     }
     public async Task Undo()
     {
         _IsEndOfGame = false;
-        if (_StackIntex == 0)
+        if (_StackIndex == 0)
             return;
-        CricketPracticeGameThrowStack stackItem = _Stack[--_StackIntex];
+        CricketPracticeGameThrowStack stackItem = _Stack[--_StackIndex];
 
         if (stackItem.Dart == 1)
         {
@@ -164,9 +169,9 @@ public partial class CricketPracticeGamePage
     }
     public async Task Redo()
     {
-        if (_StackIntex == _Stack.Count)
+        if (_StackIndex == _Stack.Count)
             return;
-        CricketPracticeGameThrowStack stackItem = _Stack[_StackIntex++];
+        CricketPracticeGameThrowStack stackItem = _Stack[_StackIndex++];
         await AddThrowDart(stackItem.Score, true);
 
     }
