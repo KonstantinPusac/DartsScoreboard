@@ -51,16 +51,26 @@ public partial class CricketGamePage
     }
     private bool IsDisabledKey(string key)
     {
-        return PlayerOnTurn.Scores.GetValueOrDefault(key, 0) == 3
+        return PlayerOnTurn.Scores.GetValueOrDefault(key, 0) + CurrentThrow.Score.Count(x => x.Target == key) == 3
                && !Players.Where(x => x != PlayerOnTurn).Any(x => x.Scores.GetValueOrDefault(key, 0) < 3);
     }
     private int GetHitCount(string key)
     {
         return CurrentThrow.Score.Count(x => x.Target == key);
     }
+    public int GetTableScore(CricketPlayerPresenter player, KeyValuePair<string, int> score)
+    {
+        return score.Value + player.CurrentThrow.Score.Count(x => x.Target == score.Key);
+    }
     private int GetPoints(string key)
     {
         return GetTargetValue(key) * CurrentThrow.Score.Count(x => x.Target == key && x.ArePoints);
+    }
+    private int CalculatePoints(CricketPlayerPresenter player)
+    {
+        if (player == PlayerOnTurn)
+            return player.Points;
+        return player.Points + CurrentThrow.Score.Where(x => x.ArePoints && player.Scores.GetValueOrDefault(x.Target, 0) < 3).Sum(x => GetTargetValue(x.Target));
     }
     protected override async Task OnParametersSetAsync()
     {
@@ -91,6 +101,8 @@ public partial class CricketGamePage
         }).ToList();
 
         ResolvePlayerOnTurn();
+        UpdateCurrentPlayerDeficit();
+        UpdateCurrentTurnStats();
         Loaded = true;
     }
 
@@ -109,6 +121,9 @@ public partial class CricketGamePage
             {
                 player.Points.RemoveAt(player.Points.Count - 1);
             }
+            UpdateCurrentPlayerDeficit();
+            UpdateCurrentTurnStats();
+            StateHasChanged();
             return;
         }
         if (keyboardKey.Value == "ENTER")
@@ -133,6 +148,9 @@ public partial class CricketGamePage
                 Target = keyboardKey.Value,
                 ArePoints = false,
             });
+            UpdateCurrentPlayerDeficit();
+            UpdateCurrentTurnStats();
+            StateHasChanged();
             return;
         }
         CurrentThrow.Score.Add(new CricketThrowScore
@@ -153,6 +171,9 @@ public partial class CricketGamePage
                     Points = new List<int> { GetTargetValue(keyboardKey.Value) },
                 });
         }
+        UpdateCurrentPlayerDeficit();
+        UpdateCurrentTurnStats();
+        StateHasChanged();
     }
     private string GetClass(CricketPlayerPresenter playerPresenter)
     {
@@ -216,6 +237,8 @@ public partial class CricketGamePage
         }
         //AddToStack(cricketThrow, false);
         await Save();
+        UpdateCurrentPlayerDeficit();
+        UpdateCurrentTurnStats();
     }
     private void AddToStack(CricketGameThrowPresenter cricketThrow, bool isRedo)
     {
@@ -323,5 +346,39 @@ public partial class CricketGamePage
         if (key.Equals("BULL", StringComparison.InvariantCultureIgnoreCase))
             return 25;
         return int.TryParse(key, out int value) ? value : 0;
+    }
+
+    private void UpdateCurrentPlayerDeficit()
+    {
+        if (Players == null || Players.Count == 0)
+        {
+            CurrentPlayerDeficit = 0;
+            return;
+        }
+        int minPoints = Players.Where(x => x != PlayerOnTurn).Min(p => CalculatePoints(p));
+        int currentPoints = CalculatePoints(PlayerOnTurn);
+        CurrentPlayerDeficit = currentPoints - minPoints;
+    }
+
+    private void UpdateCurrentTurnStats()
+    {
+        // Number of entries (marks + points) recorded in this turn
+        CurrentPlayerMarks = CurrentThrow.Score.Count;
+        // Sum of points that will be awarded this turn (after closing)
+        CurrentThrowPoints = CurrentThrow.PointsForPlayers.Sum(p => p.Points.Sum());
+
+        // Build statistics summary for player on turn
+        var targets = new[] { "20", "19", "18", "17", "16", "15", "BULL" };
+        int closedProgressMarks = targets.Sum(t => Math.Min(3,
+            PlayerOnTurn.Scores.GetValueOrDefault(t, 0) + CurrentThrow.Score.Count(s => s.Target == t)));
+
+        int totalMarksThrown = PlayerOnTurn.Throws
+            .SelectMany(th => th.Score)
+            .Sum(ns => ns.Count) + CurrentThrow.Score.Count;
+
+        int roundsPlayed = PlayerOnTurn.Throws.Count == 0 ? 1 : PlayerOnTurn.Throws.Count;
+        double marksPerRound = (double)totalMarksThrown / roundsPlayed;
+
+        StatisticsSummary = $"round: {Round}, avg: {marksPerRound:0.0}, mark: {closedProgressMarks}/21";
     }
 }

@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
     <title>DartsScoreboard</title>
     <base href="/" />
     <link rel="stylesheet" href="lib/bootstrap/dist/css/bootstrap.min.css" />
@@ -36,7 +36,29 @@
     <script src="_framework/blazor.webassembly.js"></script>
     <script>navigator.serviceWorker.register('service-worker.js');</script>
     <script src="_content/MudBlazor/MudBlazor.min.js"></script>
+    <script>
+        // Disable double-tap and pinch zoom across the app
+        (function () {
+            var lastTouchEnd = 0;
+            document.addEventListener('touchend', function (e) {
+                var now = Date.now();
+                if (now - lastTouchEnd <= 300) {
+                    e.preventDefault();
+                }
+                lastTouchEnd = now;
+            }, { passive: false });
 
+            // iOS/Safari pinch zoom
+            document.addEventListener('gesturestart', function (e) {
+                e.preventDefault();
+            }, { passive: false });
+
+            // Some Android browsers fire dblclick
+            document.addEventListener('dblclick', function (e) {
+                e.preventDefault();
+            }, { passive: false });
+        })();
+    </script>
 </body>
 
 </html>
