@@ -366,19 +366,5 @@ public partial class CricketGamePage
         CurrentPlayerMarks = CurrentThrow.Score.Count;
         // Sum of points that will be awarded this turn (after closing)
         CurrentThrowPoints = CurrentThrow.PointsForPlayers.Sum(p => p.Points.Sum());
-
-        // Build statistics summary for player on turn
-        var targets = new[] { "20", "19", "18", "17", "16", "15", "BULL" };
-        int closedProgressMarks = targets.Sum(t => Math.Min(3,
-            PlayerOnTurn.Scores.GetValueOrDefault(t, 0) + CurrentThrow.Score.Count(s => s.Target == t)));
-
-        int totalMarksThrown = PlayerOnTurn.Throws
-            .SelectMany(th => th.Score)
-            .Sum(ns => ns.Count) + CurrentThrow.Score.Count;
-
-        int roundsPlayed = PlayerOnTurn.Throws.Count == 0 ? 1 : PlayerOnTurn.Throws.Count;
-        double marksPerRound = (double)totalMarksThrown / roundsPlayed;
-
-        StatisticsSummary = $"round: {Round}, avg: {marksPerRound:0.0}, mark: {closedProgressMarks}/21";
     }
 }

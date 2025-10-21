@@ -45,23 +45,55 @@
             </table>
         </div>
 
-        <div class="bottom-section">
-            <div class="info-row">
-                <div class="info-box">Point Deficit: @CurrentPlayerDeficit</div>
-                <div class="info-box">Marks: @CurrentPlayerMarks</div>
-                <div class="info-box">Current Throw: @CurrentThrowPoints</div>
+        <div class="player-info-section">
+            <!-- Active Player Section -->
+            <div class="active-player-section">
+                <h2 class="active-player-name">@PlayerOnTurn.Name</h2>
             </div>
 
-            <div class="statistics">
-                @* Your statistics content goes here *@
-                <p>Statistics: @StatisticsSummary</p>
+            <!-- Result Cards -->
+            <div class="result-cards">
+                <div class="result-card points-card @(CurrentPlayerDeficit > 0 ? "positive" : CurrentPlayerDeficit < 0 ? "negative" : "zero")">
+                    <div class="card-label">Trenutni poeni</div>
+                    <div class="card-value">@(CurrentPlayerDeficit >= 0 ? "+" : "")@CurrentPlayerDeficit pts</div>
+                </div>
+                
+                <div class="result-card marks-card">
+                    <div class="card-label">Marks</div>
+                    <div class="card-value">@CurrentPlayerMarks</div>
+                </div>
+                
+                <div class="result-card points-total-card">
+                    <div class="card-label">Points</div>
+                    <div class="card-value">@CurrentThrowPoints</div>
+                </div>
             </div>
+
+            <!-- Round Statistics -->
+            <div class="round-statistics">
+                <div class="stat-item">
+                    <div class="stat-label">round</div>
+                    <div class="stat-value">@Round</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">mks/r</div>
+                    <div class="stat-value">@GetMarksPerRound()</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">pts/r</div>
+                    <div class="stat-value">@GetPointsPerRound()</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">mks</div>
+                    <div class="stat-value">@GetTotalMarks()/21</div>
+                </div>
+            </div>
+        </div>
 
             <div class="keyboard-wrapper">
                 <Keyboard KeyboardParameters="KeyboardParameters" KeyClick="KeyboardClick" />
             </div>
-        </div>
-    </div>
+        </div> 
 }
 
 @code {
@@ -93,5 +125,26 @@
             >= 3 => new MarkupString(SanitizeSvg(CricketIcons.ThreeMarks)),
             _ => default
         };
+    }
+
+    private string GetMarksPerRound()
+    {
+        if (Round == 0) return "0.0";
+        int totalMarks = PlayerOnTurn.Throws.SelectMany(t => t.Score).Sum(s => s.Count) + CurrentThrow.Score.Count;
+        return (totalMarks / (double)Round).ToString("0.0");
+    }
+
+    private string GetPointsPerRound()
+    {
+        if (Round == 0) return "0.0";
+        return (CalculatePoints(PlayerOnTurn) / (double)Round).ToString("0.0");
+    }
+
+    private int GetTotalMarks()
+    {
+        var targets = new[] { "20", "19", "18", "17", "16", "15", "BULL" };
+        return targets.Sum(t => Math.Min(3, 
+            PlayerOnTurn.Scores.GetValueOrDefault(t, 0) + 
+            CurrentThrow.Score.Count(s => s.Target == t)));
     }
 }                                       
