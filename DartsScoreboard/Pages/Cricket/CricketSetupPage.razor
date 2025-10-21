@@ -1,43 +1,83 @@
 ﻿@namespace DartsScoreboard
 @page "/cricket-setup"
+@using DartsScoreboard.Components
 
-<h2>Game</h2>
-
-<div class="game-container">
-
-    <!-- Player Options -->
-    <div class="player-options">
-        <h4>Player settings</h4>
-        <!-- Add Player -->
-        <button class="btn btn-primary mb-2" @onclick="OpenAddPopup" disabled="@IsFull">
-            Add Player
+<div class="setup-container">
+    <div class="setup-header">
+        <button class="back-btn" @onclick="GoBack">
+            ← Back
         </button>
-
-        <!-- Added Players Display -->
-        <div class="d-flex flex-wrap gap-2 mb-3">
-            @foreach (var player in PlayerService.SelectedPlayers)
-            {
-                <div class="card p-2 d-flex align-items-center" style="width: 130px;">
-                    <div>@player.Name</div>
-                    <button class="btn btn-sm btn-outline-danger mt-2" @onclick="() => PlayerService.RemovePlayer(player)">
-                        Remove
-                    </button>
-                </div>
-            }
-        </div>
-    </div> 
-
-    <!-- Start Button -->
-    <div class="start-button">
-        <button class="btn btn-primary" @onclick="StartGame">
-            Start
-        </button>
+        <h2>Cricket Game Setup</h2>
     </div>
 
+    <div class="game-container">
+        <!-- Player Options -->
+        <div class="player-options">
+            <h4>Player Settings</h4>
+            <!-- Add Player -->
+            <button class="btn btn-primary mb-2" @onclick="OpenPlayerSelector" disabled="@IsFull">
+                Add Player
+            </button>
+
+            <!-- Added Players Display -->
+            <div class="players-grid">
+                @foreach (var player in PlayerService.SelectedPlayers)
+                {
+                    <div class="player-card">
+                        <div class="player-name">@player.Name</div>
+                        <button class="remove-btn" @onclick="() => PlayerService.RemovePlayer(player)">
+                            ×
+                        </button>
+                    </div>
+                }
+            </div>
+        </div> 
+
+        <!-- Start Button -->
+        <div class="start-section">
+            <button class="btn btn-primary start-btn" @onclick="StartGame" disabled="@(!CanStart)">
+                Start Cricket Game
+            </button>
+        </div>
+    </div>
 </div>
 
-<!-- Pop Up -->
-@if (PlayerService.ShowAddPopup)
-{
-  
+<!-- Universal Player Selector -->
+<UniversalPlayerSelector 
+    IsVisible="ShowPlayerSelector" 
+    IsVisibleChanged="OnPlayerSelectorVisibilityChanged"
+    OnPlayerSelected="OnPlayerSelected"
+    OnNewPlayerCreated="OnNewPlayerCreated" />
+
+@code {
+    public bool ShowPlayerSelector { get; set; }
+    public bool CanStart => PlayerService.SelectedPlayers.Count >= 2;
+
+    private void OpenPlayerSelector()
+    {
+        ShowPlayerSelector = true;
+    }
+
+    private async Task OnPlayerSelectorVisibilityChanged(bool isVisible)
+    {
+        ShowPlayerSelector = isVisible;
+    }
+
+    private async Task OnPlayerSelected(User player)
+    {
+        PlayerService.AddExistingPlayer(player);
+        StateHasChanged();
+    }
+
+    private async Task OnNewPlayerCreated(string playerName)
+    {
+        // Player was already added in the component
+        await PlayerService.LoadAllUsersAsync();
+        StateHasChanged();
+    }
+
+    private void GoBack()
+    {
+        _NavigationManager.NavigateTo("/games");
+    }
 }

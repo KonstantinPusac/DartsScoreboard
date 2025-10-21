@@ -1,0 +1,192 @@
+@using Microsoft.AspNetCore.Components
+
+<div class="player-selector-overlay" @onclick="OnOverlayClick">
+    <div class="player-selector-modal" @onclick:stopPropagation="true">
+        <div class="modal-header">
+            <h3>Select Player</h3>
+            <button class="close-btn" @onclick="Close">&times;</button>
+        </div>
+        
+        <div class="modal-content">
+            <div class="search-section">
+                <input type="text" class="search-input" placeholder="Search players..." @bind="SearchTerm" @oninput="OnSearchChanged" />
+            </div>
+            
+            <div class="tabs">
+                <button class="tab @(ActiveTab == "existing" ? "active" : "")" @onclick=@(() => SetActiveTab("existing"))>
+                    Existing Players
+                </button>
+                <button class="tab @(ActiveTab == "new" ? "active" : "")" @onclick=@(() => SetActiveTab("new"))>
+                    New Player
+                </button>
+            </div>
+            
+            @if (ActiveTab == "existing")
+            {
+                <div class="players-list">
+                    @if (FilteredPlayers.Any())
+                    {
+                        @foreach (var player in FilteredPlayers)
+                        {
+                            <div class="player-item @(SelectedPlayer?.Id == player.Id ? "selected" : "")" 
+                                 @onclick="() => SelectExistingPlayer(player)">
+                                <div class="player-info">
+                                    <span class="player-name">@player.Name</span>
+                                    <span class="player-stats">@GetPlayerStats(player)</span>
+                                </div>
+                                @if (SelectedPlayer?.Id == player.Id)
+                                {
+                                    <span class="checkmark">&check;</span>
+                                }
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="no-players">
+                            <p>No players found</p>
+                            <button class="btn btn-primary" @onclick=@(() => SetActiveTab("new"))>
+                                Create New Player
+                            </button>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="new-player-form">
+                    <div class="form-group">
+                        <label>Player Name</label>
+                        <input type="text" class="form-input" @bind="NewPlayerName" placeholder="Enter player name" />
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button class="btn btn-secondary" @onclick=@(() => SetActiveTab("existing"))>
+                            Back to Existing
+                        </button>
+                        <button class="btn btn-primary" @onclick="CreateNewPlayer" disabled="@(string.IsNullOrWhiteSpace(NewPlayerName))">
+                            Create Player
+                        </button>
+                    </div>
+                </div>
+            }
+        </div>
+        
+        <div class="modal-footer">
+            <button class="btn btn-secondary" @onclick="Close">Cancel</button>
+            <button class="btn btn-primary" @onclick="ConfirmSelection" disabled="@(SelectedPlayer == null)">
+                Add Player
+            </button>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public bool IsVisible { get; set; }
+    [Parameter] public EventCallback<bool> IsVisibleChanged { get; set; }
+    [Parameter] public EventCallback<User> OnPlayerSelected { get; set; }
+    [Parameter] public EventCallback<string> OnNewPlayerCreated { get; set; }
+    
+    [Inject] public IUserPersistence UserPersistence { get; set; }
+    
+    public List<User> AllPlayers { get; set; } = new();
+    public List<User> FilteredPlayers { get; set; } = new();
+    public User? SelectedPlayer { get; set; }
+    public string SearchTerm { get; set; } = "";
+    public string NewPlayerName { get; set; } = "";
+    public string ActiveTab { get; set; } = "existing";
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (IsVisible)
+        {
+            await LoadPlayers();
+            // Reset state when modal opens
+            SelectedPlayer = null;
+            SearchTerm = "";
+            NewPlayerName = "";
+            ActiveTab = "existing";
+        }
+    }
+
+    private async Task LoadPlayers()
+    {
+        AllPlayers = await UserPersistence.GetAllUsers();
+        FilteredPlayers = AllPlayers.ToList();
+    }
+
+    private void OnSearchChanged()
+    {
+        if (string.IsNullOrWhiteSpace(SearchTerm))
+        {
+            FilteredPlayers = AllPlayers.ToList();
+        }
+        else
+        {
+            FilteredPlayers = AllPlayers
+                .Where(p => p.Name.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+        }
+    }
+
+    private void SetActiveTab(string tab)
+    {
+        ActiveTab = tab;
+        if (tab == "new")
+        {
+            NewPlayerName = "";
+        }
+    }
+
+    private void SelectExistingPlayer(User player)
+    {
+        SelectedPlayer = player;
+    }
+
+    private async Task CreateNewPlayer()
+    {
+        if (string.IsNullOrWhiteSpace(NewPlayerName))
+            return;
+
+        var newPlayer = new User { Name = NewPlayerName.Trim() };
+        await UserPersistence.AddUser(newPlayer);
+        
+        // Add to local storage for immediate use
+        await LoadPlayers();
+        
+        // Select the newly created player
+        SelectedPlayer = newPlayer;
+        await OnPlayerSelected.InvokeAsync(newPlayer);
+        await Close();
+    }
+
+    private async Task ConfirmSelection()
+    {
+        if (SelectedPlayer != null)
+        {
+            await OnPlayerSelected.InvokeAsync(SelectedPlayer);
+            await Close();
+        }
+    }
+
+    private async Task OnOverlayClick()
+    {
+        // Only close if clicking on overlay, not modal content
+        await Close();
+    }
+
+    private async Task Close()
+    {
+        SelectedPlayer = null;
+        SearchTerm = "";
+        NewPlayerName = "";
+        ActiveTab = "existing";
+        await IsVisibleChanged.InvokeAsync(false);
+    }
+
+    private string GetPlayerStats(User player)
+    {
+        // You can add more detailed stats here if needed
+        return "Player";
+    }
+}

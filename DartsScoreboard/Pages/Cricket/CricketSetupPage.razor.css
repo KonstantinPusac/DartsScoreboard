@@ -1,35 +1,208 @@
-﻿.game-container {
+﻿.setup-container {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #1b2a3b, #2c3e50);
+    padding: 20px;
+}
+
+.setup-header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 30px;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.back-btn {
+    background: #6c757d;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.back-btn:hover {
+    background: #5a6268;
+    transform: translateY(-1px);
+}
+
+.setup-header h2 {
+    color: white;
+    margin: 0;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.game-container {
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    gap: 20px;
     max-width: 600px;
     margin: auto;
-    padding: 1rem;
+    background: white;
+    border-radius: 12px;
+    padding: 30px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
 }
 
-.player-options, .game-options, .start-button {
-    border: 1px solid #ccc;
-    padding: 1rem;
+.player-options {
+    border: 2px solid #e9ecef;
+    padding: 20px;
+    border-radius: 12px;
+    background: #f8f9fa;
+}
+
+.player-options h4 {
+    color: #1b2a3b;
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 15px;
+}
+
+.players-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 12px;
+    margin-top: 15px;
+}
+
+.player-card {
+    background: white;
+    border: 2px solid #e9ecef;
     border-radius: 8px;
+    padding: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.2s ease;
 }
 
-.modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.4);
+.player-card:hover {
+    border-color: #4CAF50;
+    box-shadow: 0 2px 8px rgba(76, 175, 80, 0.2);
+}
+
+.player-name {
+    font-weight: 600;
+    color: #1b2a3b;
+    flex: 1;
+}
+
+.remove-btn {
+    background: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 1000;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    transition: all 0.2s ease;
 }
 
-.modal-box {
-    background: #fff;
-    padding: 1.5rem;
+.remove-btn:hover {
+    background: #c82333;
+    transform: scale(1.1);
+}
+
+.start-section {
+    text-align: center;
+    padding: 20px 0;
+}
+
+.start-btn {
+    background: linear-gradient(135deg, #4CAF50, #45a049);
+    color: white;
+    border: none;
+    padding: 15px 30px;
     border-radius: 8px;
-    width: 300px;
-    box-shadow: 0 0 10px rgba(0,0,0,0.3);
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+}
+
+.start-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+}
+
+.start-btn:disabled {
+    background: #6c757d;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #4CAF50, #45a049);
+    color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+}
+
+.btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .setup-container {
+        padding: 10px;
+    }
+    
+    .setup-header {
+        margin-bottom: 20px;
+    }
+    
+    .setup-header h2 {
+        font-size: 24px;
+    }
+    
+    .game-container {
+        padding: 20px;
+    }
+    
+    .players-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+    
+    .player-card {
+        padding: 10px;
+    }
+    
+    .start-btn {
+        width: 100%;
+        padding: 12px 20px;
+        font-size: 16px;
+    }
 }
