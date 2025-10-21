@@ -85,11 +85,6 @@ public partial class CricketGamePage
             return;
         }
         Game = game;
-        if (IsEndOfGame())
-        {
-            await EndOfGame();
-            return;
-        }
         var users = await _UserPersistence.GetAllUsers();
         Players = Game.Players.Select(x => new CricketPlayerPresenter
         {
@@ -108,6 +103,7 @@ public partial class CricketGamePage
 
     public async Task KeyboardClick(KeyboardKey keyboardKey)
     {
+        bool needsUpdate = false;
 
         if (keyboardKey.Value == "BACKSPACE")
         {
@@ -121,59 +117,55 @@ public partial class CricketGamePage
             {
                 player.Points.RemoveAt(player.Points.Count - 1);
             }
-            UpdateCurrentPlayerDeficit();
-            UpdateCurrentTurnStats();
-            StateHasChanged();
-            return;
+            needsUpdate = true;
         }
-        if (keyboardKey.Value == "ENTER")
+        else if (keyboardKey.Value == "ENTER")
         {
             await AddThrow(CurrentThrow, false);
             return;
         }
-        if (IsDisabledKey(keyboardKey.Value))
+        else if (!IsDisabledKey(keyboardKey.Value) && CanAddScore(keyboardKey.Value))
         {
-            return;
-        }
-        if (!CanAddScore(keyboardKey.Value))
-        {
-            return;
+            int marks = GetPlayerOnTurnMarks(keyboardKey.Value);
+            if (marks < 3)
+            {
+                CurrentThrow.Score.Add(new CricketThrowScore
+                {
+                    Target = keyboardKey.Value,
+                    ArePoints = false,
+                });
+                needsUpdate = true;
+            }
+            else
+            {
+                CurrentThrow.Score.Add(new CricketThrowScore
+                {
+                    Target = keyboardKey.Value,
+                    ArePoints = true,
+                });
+                var playersToAddPoints = Players.Where(x => x != PlayerOnTurn && x.Scores.GetValueOrDefault(keyboardKey.Value, 0) < 3).ToList();
+                foreach (var item in playersToAddPoints)
+                {
+                    var existing = CurrentThrow.PointsForPlayers.FirstOrDefault(x => x.Player == item);
+                    if (existing != null)
+                        existing.Points.Add(GetTargetValue(keyboardKey.Value));
+                    else
+                        CurrentThrow.PointsForPlayers.Add(new PointsForPlayer
+                        {
+                            Player = item,
+                            Points = new List<int> { GetTargetValue(keyboardKey.Value) },
+                        });
+                }
+                needsUpdate = true;
+            }
         }
 
-        int marks = GetPlayerOnTurnMarks(keyboardKey.Value);
-        if (marks < 3)
+        if (needsUpdate)
         {
-            CurrentThrow.Score.Add(new CricketThrowScore
-            {
-                Target = keyboardKey.Value,
-                ArePoints = false,
-            });
             UpdateCurrentPlayerDeficit();
             UpdateCurrentTurnStats();
             StateHasChanged();
-            return;
         }
-        CurrentThrow.Score.Add(new CricketThrowScore
-        {
-            Target = keyboardKey.Value,
-            ArePoints = true,
-        });
-        var playersToAddPoints = Players.Where(x => x != PlayerOnTurn && x.Scores.GetValueOrDefault(keyboardKey.Value, 0) < 3).ToList();
-        foreach (var item in playersToAddPoints)
-        {
-            var existing = CurrentThrow.PointsForPlayers.FirstOrDefault(x => x.Player == item);
-            if (existing != null)
-                existing.Points.Add(GetTargetValue(keyboardKey.Value));
-            else
-                CurrentThrow.PointsForPlayers.Add(new PointsForPlayer
-                {
-                    Player = item,
-                    Points = new List<int> { GetTargetValue(keyboardKey.Value) },
-                });
-        }
-        UpdateCurrentPlayerDeficit();
-        UpdateCurrentTurnStats();
-        StateHasChanged();
     }
     private string GetClass(CricketPlayerPresenter playerPresenter)
     {
@@ -225,6 +217,12 @@ public partial class CricketGamePage
         {
             player.Player.Points += player.Points.Sum();
         }
+
+        if (IsEndOfGame())
+        {
+            await EndOfGame();
+            return;
+        }
         CurrentThrow.Clear();
         if (Players.Count == (PlayerOnTurnIndex + 1))
         {
@@ -239,17 +237,6 @@ public partial class CricketGamePage
         await Save();
         UpdateCurrentPlayerDeficit();
         UpdateCurrentTurnStats();
-    }
-    private void AddToStack(CricketGameThrowPresenter cricketThrow, bool isRedo)
-    {
-        if (isRedo)
-        {
-            return;
-        }
-        if (_Stack.Count > _StackIndex && !isRedo)
-            _Stack.RemoveRange(_StackIndex, _Stack.Count - _StackIndex);
-        _Stack.Add(cricketThrow);
-        _StackIndex++;
     }
     private async Task Save()
     {
@@ -332,14 +319,39 @@ public partial class CricketGamePage
 
     private async Task EndOfGame()
     {
-        return;
-        throw new NotImplementedException();
+        // Save final game state
+        await Save();
+
+        // Navigate to end game page
+        _NavigationManager.NavigateTo($"/cricket-end/{gameCode}");
     }
 
     private bool IsEndOfGame()
     {
+        // Check if any player has all 21 marks (3 marks for each target: 20,19,18,17,16,15,BULL)
+        var targets = new[] { "20", "19", "18", "17", "16", "15", "BULL" };
+
+        foreach (var player in Players)
+        {
+            bool hasAllMarks = targets.All(target =>
+                player.Scores.GetValueOrDefault(target, 0) >= 3);
+
+            if (hasAllMarks)
+            {
+                // Check if this player has minimal points (wins) or if there's a tie
+                int playerPoints = CalculatePoints(player);
+                int minPoints = Players.Min(p => CalculatePoints(p));
+
+                // Game ends if this player has minimal points (wins) 
+                // OR if multiple players have 21 marks and same minimal points (tie)
+                if (playerPoints == minPoints)
+                {
+                    return true;
+                }
+            }
+        }
+
         return false;
-        throw new NotImplementedException();
     }
     int GetTargetValue(string key)
     {
@@ -355,8 +367,20 @@ public partial class CricketGamePage
             CurrentPlayerDeficit = 0;
             return;
         }
-        int minPoints = Players.Where(x => x != PlayerOnTurn).Min(p => CalculatePoints(p));
+
         int currentPoints = CalculatePoints(PlayerOnTurn);
+        int minPoints = int.MaxValue;
+
+        foreach (var player in Players)
+        {
+            if (player != PlayerOnTurn)
+            {
+                int playerPoints = CalculatePoints(player);
+                if (playerPoints < minPoints)
+                    minPoints = playerPoints;
+            }
+        }
+
         CurrentPlayerDeficit = currentPoints - minPoints;
     }
 

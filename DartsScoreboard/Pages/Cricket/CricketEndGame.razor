@@ -1,0 +1,198 @@
+@page "/cricket-end/{gameCode}"
+@namespace DartsScoreboard
+@using Microsoft.AspNetCore.Components
+@if (Loaded)
+{
+    <div class="end-game-container">
+        <div class="game-results">
+            <h1 class="game-title">Cricket Game Results</h1>
+            
+            @if (IsTie)
+            {
+                <div class="tie-result">
+                    <h2 class="tie-title">🏆 TIE GAME! 🏆</h2>
+                    <p class="tie-description">Multiple players finished with 21 marks and @WinningPoints points</p>
+                </div>
+            }
+            else
+            {
+                <div class="winner-result">
+                    <h2 class="winner-title">🏆 WINNER! 🏆</h2>
+                    <div class="winner-name">@Winner.Name</div>
+                    <div class="winner-stats">Finished with @WinningPoints points</div>
+                </div>
+            }
+
+            <div class="game-statistics">
+                <h3>Game Statistics</h3>
+                <div class="stats-grid">
+                    @foreach (var player in FinalRankings)
+                    {
+                        <div class="player-stats @(player == Winner ? "winner" : "")">
+                            <div class="player-header">
+                                <span class="player-name">@player.Name</span>
+                                <span class="player-rank">#@(FinalRankings.IndexOf(player) + 1)</span>
+                            </div>
+                            
+                            <div class="stats-row">
+                                <div class="stat-item">
+                                    <span class="stat-label">Points</span>
+                                    <span class="stat-value">@CalculatePoints(player)</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Rounds</span>
+                                    <span class="stat-value">@GetRoundsPlayed(player)</span>
+                                </div>
+                            </div>
+                            
+                            <div class="stats-row">
+                                <div class="stat-item">
+                                    <span class="stat-label">Marks/Round</span>
+                                    <span class="stat-value">@GetMarksPerRound(player)</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Points/Round</span>
+                                    <span class="stat-value">@GetPointsPerRound(player)</span>
+                                </div>
+                            </div>
+                            
+                            <div class="marks-progress">
+                                <div class="progress-label">Marks Progress</div>
+                                <div class="marks-display">
+                                    @foreach (var target in new[] { "20", "19", "18", "17", "16", "15", "BULL" })
+                                    {
+                                        <div class="target-marks">
+                                            <span class="target-name">@target</span>
+                                            <span class="mark-count @(player.Scores.GetValueOrDefault(target, 0) >= 3 ? "completed" : "")">
+                                                @player.Scores.GetValueOrDefault(target, 0)/3
+                                            </span>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="game-actions">
+                <button class="btn btn-primary" @onclick="NewGame">New Game</button>
+                <button class="btn btn-secondary" @onclick="BackToGames">Back to Games</button>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Inject] public ICricketPersistence _CricketPersistence { get; set; }
+    [Inject] public IUserPersistence _UserPersistence { get; set; }
+    [Inject] public NavigationManager _NavigationManager { get; set; }
+    [Parameter] public string? gameCode { get; set; }
+    
+    public bool Loaded { get; set; }
+    public CricketGame Game { get; set; } = new();
+    public List<CricketPlayerPresenter> Players { get; set; } = new();
+    public CricketPlayerPresenter? Winner { get; set; }
+    public bool IsTie { get; set; }
+    public int WinningPoints { get; set; }
+    public List<CricketPlayerPresenter> FinalRankings { get; set; } = new();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (gameCode == null)
+        {
+            _NavigationManager.NavigateTo("/games");
+            return;
+        }
+        
+        var game = await _CricketPersistence.Get(gameCode);
+        if (game == null)
+        {
+            _NavigationManager.NavigateTo("/games");
+            return;
+        }
+        
+        Game = game;
+        var users = await _UserPersistence.GetAllUsers();
+        Players = Game.Players.Select(x => new CricketPlayerPresenter
+        {
+            Throws = x.Throws,
+            Points = x.Points,
+            Scores = x.Scores.ToDictionary(x => x.Target, x => x.Count),
+            UserId = x.UserId,
+            Name = users.FirstOrDefault(u => u.Id == x.UserId)?.Name ?? x.GuestName ?? "Guest",
+        }).ToList();
+
+        DetermineWinner();
+        Loaded = true;
+    }
+
+    private void DetermineWinner()
+    {
+        // Sort players by points (ascending - lower is better)
+        FinalRankings = Players.OrderBy(p => CalculatePoints(p)).ToList();
+        
+        int minPoints = CalculatePoints(FinalRankings[0]);
+        var winners = FinalRankings.Where(p => CalculatePoints(p) == minPoints).ToList();
+        
+        if (winners.Count > 1)
+        {
+            IsTie = true;
+            WinningPoints = minPoints;
+        }
+        else
+        {
+            Winner = winners[0];
+            WinningPoints = minPoints;
+        }
+    }
+
+    private int CalculatePoints(CricketPlayerPresenter player)
+    {
+        return player.Points;
+    }
+
+    private string GetMarkDisplay(int marks)
+    {
+        return marks switch
+        {
+            0 => "○",
+            1 => "●",
+            2 => "●●",
+            >= 3 => "●●●",
+            _ => "○"
+        };
+    }
+
+    private int GetRoundsPlayed(CricketPlayerPresenter player)
+    {
+        return player.Throws.Count;
+    }
+
+    private string GetMarksPerRound(CricketPlayerPresenter player)
+    {
+        int rounds = GetRoundsPlayed(player);
+        if (rounds == 0) return "0.0";
+        
+        int totalMarks = player.Throws.Sum(t => t.Score.Sum(s => s.Count));
+        return (totalMarks / (double)rounds).ToString("0.0");
+    }
+
+    private string GetPointsPerRound(CricketPlayerPresenter player)
+    {
+        int rounds = GetRoundsPlayed(player);
+        if (rounds == 0) return "0.0";
+        
+        return (CalculatePoints(player) / (double)rounds).ToString("0.0");
+    }
+
+    private void NewGame()
+    {
+        _NavigationManager.NavigateTo("/cricket-setup");
+    }
+
+    private void BackToGames()
+    {
+        _NavigationManager.NavigateTo("/games");
+    }
+}

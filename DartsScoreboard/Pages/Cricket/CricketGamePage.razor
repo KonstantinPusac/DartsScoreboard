@@ -130,7 +130,7 @@
     private string GetMarksPerRound()
     {
         if (Round == 0) return "0.0";
-        int totalMarks = PlayerOnTurn.Throws.SelectMany(t => t.Score).Sum(s => s.Count) + CurrentThrow.Score.Count;
+        int totalMarks = PlayerOnTurn.Throws.Sum(t => t.Score.Sum(s => s.Count)) + CurrentThrow.Score.Count;
         return (totalMarks / (double)Round).ToString("0.0");
     }
 
@@ -143,8 +143,13 @@
     private int GetTotalMarks()
     {
         var targets = new[] { "20", "19", "18", "17", "16", "15", "BULL" };
-        return targets.Sum(t => Math.Min(3, 
-            PlayerOnTurn.Scores.GetValueOrDefault(t, 0) + 
-            CurrentThrow.Score.Count(s => s.Target == t)));
+        int total = 0;
+        foreach (var target in targets)
+        {
+            int currentMarks = PlayerOnTurn.Scores.GetValueOrDefault(target, 0) + 
+                              CurrentThrow.Score.Count(s => s.Target == target);
+            total += Math.Min(3, currentMarks);
+        }
+        return total;
     }
 }                                       
