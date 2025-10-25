@@ -12,47 +12,87 @@
                     bool isSelected = (keyboardKey.HitCount?.Invoke() ?? 0) > 0;
                     bool hasPoints = (keyboardKey.Points?.Invoke() ?? 0) > 0;
 
-
                     <button class="@GetClass(keyboardKey, isDisabled, isSelected)"
-                    style="@GetStyle(keyboardKey, isDisabled)"
-                    disabled="@isDisabled"
-                    @onclick="@(() => { if (!isDisabled) KeyClick.InvokeAsync(keyboardKey); })">
+                            style="@GetStyle(keyboardKey, isDisabled)"
+                            disabled="@isDisabled"
+                            @onpointerdown="@(e => OnPointerDown(e, keyboardKey, isDisabled))"
+                            @onpointerup="@(e => OnPointerUp(e, keyboardKey, isDisabled))"
+                            @onpointerleave="@(e => OnPointerLeave(e))">
                         @if (isSelected)
                         {
-                            
                             <div class="hit-count">
                                 +@keyboardKey.HitCount?.Invoke()
                             </div>
                         }
                         @if (hasPoints)
                         {
-                            
-                            <div class="point">
+                            <div class="point" >
                                 @keyboardKey.Points?.Invoke()
                             </div>
                         }
                         @keyboardKey.Text
-                    </button> 
+                    </button>
                 }
             </div>
         }
     </div>
 }
-@code
-{
-    private string GetStyle(KeyboardKey keyboardKey, bool isDisabed)
+
+@code {
+    private bool _longPressTriggered = false;
+    private CancellationTokenSource? _cts;
+
+    private string GetStyle(KeyboardKey keyboardKey, bool isDisabled)
     {
-        if (isDisabed)
+        if (isDisabled)
             return keyboardKey.StyleDisabled ?? "";
-        return keyboardKey.Style;
+        return keyboardKey.Style?.Invoke() ?? "";
     }
-    private string GetClass(KeyboardKey keyboardKey, bool isDisabed, bool isSelected)
+
+    private string GetClass(KeyboardKey keyboardKey, bool isDisabled, bool isSelected)
     {
         string className = "keyboard-key";
-        if (isDisabed)
-            className+= " keyboard-key-disabled";
+        if (isDisabled)
+            className += " keyboard-key-disabled";
         if (isSelected)
             className += " keyboard-key-selected";
         return className;
+    }
+
+    private async Task OnPointerDown(PointerEventArgs e, KeyboardKey key, bool isDisabled)
+    {
+        if (isDisabled) return;
+        _longPressTriggered = false;
+
+        _cts = new CancellationTokenSource();
+        try
+        {
+            // Wait 500ms — long press threshold
+            await Task.Delay(500, _cts.Token);
+            _longPressTriggered = true;
+
+            // Long press action
+            if (key.OnLongPress != null)
+                await key.OnLongPress.Invoke(key);
+        }
+        catch (TaskCanceledException)
+        {
+            // Ignore — means short press
+        }
+    }
+
+    private async Task OnPointerUp(PointerEventArgs e, KeyboardKey key, bool isDisabled)
+    {
+        if (isDisabled) return;
+        _cts?.Cancel();
+
+        // Only trigger click if not a long press
+        if (!_longPressTriggered)
+            await KeyClick.InvokeAsync(key);
+    }
+
+    private void OnPointerLeave(PointerEventArgs e)
+    {
+        _cts?.Cancel();
     }
 }
