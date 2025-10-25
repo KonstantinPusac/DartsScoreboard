@@ -1,9 +1,23 @@
-﻿ 
+﻿.cricket-svg-icon {
+    display: inline-block;
+}
+
+.cricket-svg-icon svg {
+    width: 50px;
+    height: 50px;
+    display: block;
+}
+
+.cricket-svg-icon svg line,
+.cricket-svg-icon svg circle {
+    stroke: currentColor;
+    stroke-width: 3;
+}
 .container {
     display: flex;
     flex-direction: column;
-    height: 100vh;
-    padding:0;
+    height: 100dvh;
+    padding: 0;
     overflow: hidden;
 }
 .header
@@ -20,13 +34,30 @@
     .score-table table {
         width: 100%;
         border-collapse: collapse;
+        font-size: 16px;
+        font-weight: 500;
+    }
+
+    .score-table th {
+        border: 2px solid #ddd;
+        padding: 12px 8px;
+        text-align: center;
+        background-color: inherit;
+        font-weight: bold;
         font-size: 14px;
     }
 
-    .score-table th, .score-table td {
+    .score-table td {
         border: 1px solid #ddd;
-        padding: 6px;
+        padding: 10px 8px;
         text-align: center;
+        min-width: 0;
+    }
+
+    .score-table td:first-child {
+        text-align: left;
+        font-weight: 600;
+        padding-left: 12px;
     }
 
 .bottom-section {
@@ -190,6 +221,29 @@
 
 /* Responsive Design */
 @media (max-width: 768px) {
+    .score-table table {
+        font-size: 14px;
+    }
+
+    .score-table th {
+        padding: 8px 4px;
+        font-size: 12px;
+    }
+
+    .score-table td {
+        padding: 8px 4px;
+    }
+
+    .score-table td:first-child {
+        padding-left: 8px;
+        font-size: 13px;
+    }
+
+    .cricket-svg-icon svg {
+        width: 40px;
+        height: 40px;
+    }
+
     .result-cards {
         flex-direction: row;
         gap: 8px;

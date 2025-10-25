@@ -11,6 +11,7 @@ public class KeyboardKey
     public Func<bool>? IsDisabled { get; set; }
     public Func<int>? HitCount { get; set; }
     public Func<int>? Points { get; set; }
-    public string Style { get; set; } = "";
+    public Func<string>? Style { get; set; }
     public string StyleDisabled { get; set; } = "";
+    public Func<KeyboardKey, Task>? OnLongPress { get; set; }
 }

@@ -5,7 +5,12 @@
     height: 100%;
     gap: 5px; /* Fixed gap between rows */
 }
-
+.hit-count {
+    color: white;
+}
+.point{
+    color: white;
+}
 .keyboard-row {
     display: flex;
     flex: 1;

@@ -20,16 +20,15 @@ public partial class CricketPracticeGamePage
     private List<CricketPracticeGameThrowStack> _Stack = new();
     private bool _IsEndOfGame = false;
     public KeyboardParameters KeyboardParameters => CurrentTarget == "BULL" ? num2 : num3;
-    private static string _KeyboardKeyStyle = "color:white";
     KeyboardParameters num2 = new KeyboardParameters
     {
         KeyboardKeys = new List<List<KeyboardKey>>
         {
             new List<KeyboardKey>
             {
-                new KeyboardKey{Text="0",Value="0", Style=_KeyboardKeyStyle},
-                new KeyboardKey{Text="1",Value="1", Style=_KeyboardKeyStyle},
-                new KeyboardKey{Text="2",Value="2", Style=_KeyboardKeyStyle},
+                new KeyboardKey{Text="0",Value="0"},
+                new KeyboardKey{Text="1",Value="1"},
+                new KeyboardKey{Text="2",Value="2"},
             }
         }
     };
@@ -39,10 +38,10 @@ public partial class CricketPracticeGamePage
         {
             new List<KeyboardKey>
             {
-                new KeyboardKey{Text="0",Value="0", Style = _KeyboardKeyStyle},
-                new KeyboardKey{Text="1",Value="1", Style = _KeyboardKeyStyle},
-                new KeyboardKey{Text="2",Value="2", Style = _KeyboardKeyStyle},
-                new KeyboardKey{Text = "3",Value = "3", Style = _KeyboardKeyStyle},
+                new KeyboardKey{Text="0",Value="0"},
+                new KeyboardKey{Text="1",Value="1"},
+                new KeyboardKey{Text="2",Value="2"},
+                new KeyboardKey{Text = "3",Value = "3"},
             }
         }
     };
