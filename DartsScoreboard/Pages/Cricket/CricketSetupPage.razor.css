@@ -1,6 +1,6 @@
 ﻿.setup-container {
     min-height: 100vh;
-    background: linear-gradient(135deg, #1b2a3b, #2c3e50);
+    background: linear-gradient(135deg, var(--color3), #2c3e50);
     padding: 20px;
 }
 
@@ -58,7 +58,7 @@
 }
 
 .player-options h4 {
-    color: #1b2a3b;
+    color: var(--color3);
     font-size: 20px;
     font-weight: bold;
     margin-bottom: 15px;
@@ -89,7 +89,7 @@
 
 .player-name {
     font-weight: 600;
-    color: #1b2a3b;
+    color: var(--color3);
     flex: 1;
 }
 .players-header {

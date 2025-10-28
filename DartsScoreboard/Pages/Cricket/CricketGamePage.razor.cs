@@ -19,6 +19,11 @@ public partial class CricketGamePage
     public CricketPlayerPresenter PlayerOnTurn => Players[PlayerOnTurnIndex]; // player on turn in current round
 
     public CricketGameThrowPresenter CurrentThrow => PlayerOnTurn.CurrentThrow;// in current round - max 9 elements  
+    private readonly Stack<CricketGameStateSnapshot> _undoStack = new();
+    private readonly Stack<CricketGameStateSnapshot> _redoStack = new();
+    private bool _canUndo => _undoStack.Count > 0;
+    private bool _canRedo => _redoStack.Count > 0;
+    private List<User> _usersCache = new();
     protected override void OnInitialized()
     {
         KeyboardParameters = new KeyboardParameters
@@ -95,6 +100,7 @@ public partial class CricketGamePage
         }
         Game = game;
         var users = await _UserPersistence.GetAllUsers();
+        _usersCache = users;
         Players = Game.Players.Select(x => new CricketPlayerPresenter
         {
             Throws = x.Throws,
@@ -206,6 +212,11 @@ public partial class CricketGamePage
 
     private async Task AddThrow(CricketGameThrowPresenter cricketThrow, bool isRedo)
     {
+        if (!isRedo)
+        {
+            _undoStack.Push(CreateSnapshot());
+            _redoStack.Clear();
+        }
         var scoreGroups = cricketThrow.Score.GroupBy(x => x.Target);
         PlayerOnTurn.Throws.Add(new CricketThrow()
         {
@@ -247,6 +258,95 @@ public partial class CricketGamePage
         await Save();
         UpdateCurrentPlayerDeficit();
         UpdateCurrentTurnStats();
+    }
+
+    private CricketGameStateSnapshot CreateSnapshot()
+    {
+        // Build a deep copy of the current state using the same mapping as Save()
+        var playersCopy = Players.Select(x => new CricketPlayer
+        {
+            UserId = x.UserId,
+            GuestName = x.Name,
+            Throws = x.Throws.Select(t => new CricketThrow
+            {
+                Score = t.Score.Select(s => new CricketNumberScore
+                {
+                    Target = s.Target,
+                    Count = s.Count,
+                }).ToList(),
+            }).ToList(),
+            Scores = x.Scores.Select(s => new CricketNumberScore
+            {
+                Target = s.Key,
+                Count = s.Value,
+            }).ToList(),
+            Points = x.Points,
+        }).ToList();
+
+        return new CricketGameStateSnapshot
+        {
+            Players = playersCopy,
+            PlayerOnTurnIndex = PlayerOnTurnIndex,
+            Round = Round,
+            IsGameFinished = IsGameFinished,
+        };
+    }
+
+    private void RestoreSnapshot(CricketGameStateSnapshot snap)
+    {
+        // Rebuild presenters from snapshot
+        Players = snap.Players.Select(x => new CricketPlayerPresenter
+        {
+            Throws = x.Throws.Select(t => new CricketThrow
+            {
+                Score = t.Score.Select(s => new CricketNumberScore
+                {
+                    Target = s.Target,
+                    Count = s.Count,
+                }).ToList(),
+            }).ToList(),
+            Scores = x.Scores.ToDictionary(s => s.Target, s => s.Count),
+            Points = x.Points,
+            UserId = x.UserId,
+            Name = _usersCache.FirstOrDefault(u => u.Id == x.UserId)?.Name ?? x.GuestName ?? "Guest",
+        }).ToList();
+        PlayerOnTurnIndex = Math.Clamp(snap.PlayerOnTurnIndex, 0, Math.Max(Players.Count - 1, 0));
+        Round = Math.Max(1, snap.Round);
+        IsGameFinished = snap.IsGameFinished;
+        if (Players.Count > 0)
+            Players[PlayerOnTurnIndex].CurrentThrow.Clear();
+    }
+
+    public async Task Undo()
+    {
+        if (_undoStack.Count == 0) return;
+        _redoStack.Push(CreateSnapshot());
+        var snap = _undoStack.Pop();
+        RestoreSnapshot(snap);
+        await Save();
+        UpdateCurrentPlayerDeficit();
+        UpdateCurrentTurnStats();
+        StateHasChanged();
+    }
+
+    public async Task Redo()
+    {
+        if (_redoStack.Count == 0) return;
+        _undoStack.Push(CreateSnapshot());
+        var snap = _redoStack.Pop();
+        RestoreSnapshot(snap);
+        await Save();
+        UpdateCurrentPlayerDeficit();
+        UpdateCurrentTurnStats();
+        StateHasChanged();
+    }
+
+    private class CricketGameStateSnapshot
+    {
+        public List<CricketPlayer> Players { get; set; } = new();
+        public int PlayerOnTurnIndex { get; set; }
+        public int Round { get; set; }
+        public bool IsGameFinished { get; set; }
     }
     private async Task Save()
     {

@@ -102,7 +102,7 @@
 
 /* Player Info Section - Modern Sports Design */
 .player-info-section {
-    background: #1b2a3b;
+    background: var(--color3);
     padding: 20px;
     margin: 10px 0;
     border-radius: 12px;
@@ -273,4 +273,17 @@
     .stat-value {
         font-size: 16px;
     }
+}
+.cricket-toolbar {
+    position: sticky;
+    background-color: var(--color3);
+    top: 0;
+    z-index: 5;
+    display: flex;
+    -ms-flex-direction: row-reverse;
+    -webkit-flex-direction: row-reverse;
+    flex-direction: row-reverse;
+    gap: 15px;
+    padding: 8px 12px;
+    border-bottom: 1px solid #e9ecef;
 }
