@@ -1,0 +1,111 @@
+@namespace DartsScoreboard
+@using Microsoft.AspNetCore.Components
+
+<div class="modal-content">
+    <button class="close-x" @onclick="Close" aria-label="Close">&times;</button>
+    <div class="new-player-form">
+        <div class="form-group">
+            <label>Register new player</label>
+            <div class="d-flex g-2">
+                <input type="text" class="form-input" @bind="NewPlayerName" placeholder="Enter player name" /> 
+                <button class="btn add-button" @onclick="CreateNewPlayer" aria-label="Add Player">
+                    +
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+    <label>Select player</label>
+    <div class="players-list"> 
+        @foreach (var player in AllPlayers)
+        {
+            <div class="player-item @(SelectedPlayer?.Id == player.Id ? "selected" : "")"
+            @onclick="() => SelectExistingPlayer(player)">
+                <div class="player-info">
+                    <span class="player-name">@player.Name</span> 
+                </div>
+                @if (SelectedPlayer?.Id == player.Id)
+                {
+                    <span class="checkmark">&check;</span>
+                }
+            </div>
+        } 
+    </div> 
+</div>
+
+
+@code {
+    [Parameter] public bool IsVisible { get; set; }
+    [Parameter] public bool UseOverlay { get; set; } = true;
+    [Parameter] public EventCallback<bool> IsVisibleChanged { get; set; }
+    [Parameter] public EventCallback<User> OnPlayerSelected { get; set; } 
+
+    [Inject] public PlayerSelectionService PlayerSelectionService { get; set; }
+
+    public List<User> AllPlayers { get; set; } = new();
+    public User? SelectedPlayer { get; set; }
+    public string NewPlayerName { get; set; } = "";
+    protected override async Task OnInitializedAsync()
+    {
+        await PlayerSelectionService.LoadAllUsersAsync();
+        await base.OnInitializedAsync();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (IsVisible)
+        {
+            await LoadPlayers(); 
+            SelectedPlayer = null;
+            NewPlayerName = "";
+        }
+    }
+
+    private async Task LoadPlayers()
+    {
+        AllPlayers = PlayerSelectionService.NotSelectedPlayers;
+    }  
+
+    private async Task SelectExistingPlayer(User player)
+    {
+        SelectedPlayer = player;
+        PlayerSelectionService.SelectedPlayers.Add(player);
+        await OnPlayerSelected.InvokeAsync(SelectedPlayer);
+        await Close();
+    }
+
+    private async Task CreateNewPlayer()
+    {
+        if (string.IsNullOrWhiteSpace(NewPlayerName))
+            return;
+        NewPlayerName = NewPlayerName.Trim();
+        var newPlayer = new User { Name = NewPlayerName.Trim() };
+        await PlayerSelectionService.CreateUser(newPlayer);
+
+        SelectedPlayer = newPlayer;
+        await OnPlayerSelected.InvokeAsync(newPlayer);
+        await Close();
+    }
+
+    private async Task ConfirmSelection()
+    {
+        if (SelectedPlayer != null)
+        {
+            PlayerSelectionService.AddExistingPlayer(SelectedPlayer);
+            await OnPlayerSelected.InvokeAsync(SelectedPlayer);
+            await Close();
+        }
+    }
+
+    private async Task OnOverlayClick()
+    { 
+        await Close();
+    }
+
+    private async Task Close()
+    { 
+        NewPlayerName = ""; 
+        await OnPlayerSelected.InvokeAsync(null);
+    } 
+}

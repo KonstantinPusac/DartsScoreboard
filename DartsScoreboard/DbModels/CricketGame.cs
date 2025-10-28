@@ -7,6 +7,7 @@ public class CricketGame
     [System.ComponentModel.DataAnnotations.Key]
     public string Code { get; set; }
     public List<CricketPlayer> Players { get; set; }
+    public bool IsGameFinished { get; set; }
 }
 public class CricketPlayer
 {

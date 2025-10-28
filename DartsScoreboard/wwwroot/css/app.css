@@ -9,12 +9,7 @@ h1:focus {
 a, .btn-link {
     color: #0071c1;
 }
-
-.btn-primary {
-    color: #fff;
-    background-color: #1b6ec2;
-    border-color: #1861ac;
-}
+ 
 
 .btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
   box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
@@ -68,37 +63,14 @@ a, .btn-link {
     }
 
 .loading-progress {
-    position: relative;
-    display: block;
-    width: 8rem;
-    height: 8rem;
-    margin: 20vh auto 1rem auto;
+    display: flex;
+    justify-content: center;
+    -webkit-align-items: center;
+    align-items: center;
+    height: 100dvh;
 }
 
-    .loading-progress circle {
-        fill: none;
-        stroke: #e0e0e0;
-        stroke-width: 0.6rem;
-        transform-origin: 50% 50%;
-        transform: rotate(-90deg);
-    }
-
-        .loading-progress circle:last-child {
-            stroke: #1b6ec2;
-            stroke-dasharray: calc(3.141 * var(--blazor-load-percentage, 0%) * 0.8), 500%;
-            transition: stroke-dasharray 0.05s ease-in-out;
-        }
-
-.loading-progress-text {
-    position: absolute;
-    text-align: center;
-    font-weight: bold;
-    inset: calc(20vh + 3.25rem) 0 auto 0.2rem;
-}
-
-    .loading-progress-text:after {
-        content: var(--blazor-load-percentage-text, "Loading");
-    }
+   
 
 code {
     color: #c02d76;
@@ -116,8 +88,87 @@ code {
     --bg-color: #213448;
     --color1: #547792;
     --color2: #94B4C1;
+    --color3: #1b2a3b;
     --text-color: white;
 }
+.btn-primary
+{
+    background-color:var(--color1) !important;
+}
+/* Bottom-sheet dialog styling for player selector */
+.mud-dialog.player-bottom-sheet {
+    width: 100vw;
+    bottom: 0;
+    position: fixed;
+    max-width: 100vw;
+    max-height: 80vh;
+    height: auto;
+    margin: 0;
+    border-radius: 16px 16px 0 0;
+    background-color: #fff;
+    color: var(--bg-color);
+    transform: translateY(100%);
+    animation: slide-up 220ms ease-out forwards;
+}
+
+/* Ensure bottom positioning when using BottomCenter option */
+.mud-dialog-container.mud-dialog-bottom-center {
+    /* Anchor dialog to the bottom without leftover gap */
+    display: flex;
+    height: 100vh; /* fill viewport to allow bottom alignment */
+    justify-content: flex-end; /* push to bottom */
+    align-items: center; /* center horizontally */
+    padding: 0 !important; /* remove default padding */
+}
+
+/* Ensure no extra margins/padding on the dialog itself */
+.mud-dialog-container.mud-dialog-bottom-center .mud-dialog,
+.mud-dialog-container.mud-dialog-bottom-center .mud-paper,
+.mud-dialog-container.mud-dialog-bottom-center .mud-dialog-content {
+    margin: 0 !important;
+}
+
+@keyframes slide-up {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+}
+
+/* Tweak inner content colors to use theme variables */
+.player-bottom-sheet .modal-content { position: relative; }
+
+.player-bottom-sheet .player-item { border-color: rgba(0,0,0,0.08); }
+
+.player-bottom-sheet .player-item:hover { border-color: var(--color1); background: rgba(84,119,146,0.08); }
+
+.player-bottom-sheet .player-item.selected { border-color: var(--color2); background: rgba(148,180,193,0.14); }
+
+.player-bottom-sheet .form-input { background: #fff; color: var(--bg-color); border-color: rgba(0,0,0,0.15); }
+
+.player-bottom-sheet .btn-primary,
+.player-bottom-sheet .add-button { background: var(--color1); color: var(--text-color); }
+
+.player-bottom-sheet .btn-secondary { background: var(--color2); color: var(--bg-color); }
+
+/* Close X top-right in dialog */
+.player-bottom-sheet .close-x {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    background: transparent;
+    color: var(--bg-color);
+    font-size: 20px;
+    line-height: 1;
+}
+.player-bottom-sheet .close-x:hover { background: rgba(0,0,0,0.06); }
+
+/* Utilities for spacing used in selector */
+.d-flex { display: flex; }
+.g-2 { gap: 12px; }
 
 body {
     background-color: var(--bg-color) !important;
