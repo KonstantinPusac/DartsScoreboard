@@ -1,7 +1,5 @@
 ﻿
-using DartsScoreboard.Models.CricketPracticeGame;
 using Microsoft.AspNetCore.Components;
-using System.Net.Http.Headers;
 
 namespace DartsScoreboard;
 
@@ -13,14 +11,13 @@ public partial class CricketGamePage
     [Parameter] public string? gameCode { get; set; }
     public int Round { get; set; } = 1;
     public bool Loaded { get; set; }
+    public bool IsGameFinished { get; set; }
     public CricketGame Game { get; set; } = new();
     public List<CricketPlayerPresenter> Players { get; set; } = new();
     public KeyboardParameters KeyboardParameters { get; set; }
     public int PlayerOnTurnIndex { get; set; } = 0; // index of player on turn in Players list
     public CricketPlayerPresenter PlayerOnTurn => Players[PlayerOnTurnIndex]; // player on turn in current round
 
-    public int _StackIndex { get; set; } = 0;
-    public List<CricketGameThrowPresenter> _Stack { get; set; } = new();
     public CricketGameThrowPresenter CurrentThrow => PlayerOnTurn.CurrentThrow;// in current round - max 9 elements  
     protected override void OnInitialized()
     {
@@ -232,6 +229,7 @@ public partial class CricketGamePage
 
         if (IsEndOfGame())
         {
+            IsGameFinished = true;
             await EndOfGame();
             return;
         }
@@ -271,49 +269,9 @@ public partial class CricketGamePage
             }).ToList(),
             Points = x.Points,
         }).ToList();
+        Game.IsGameFinished = IsGameFinished;
         await _CricketPersistence.AddOrUpdate(Game);
     }
-    /*   public async Task Redo()
-       {
-           if (_StackIndex == _Stack.Count)
-               return;
-           var stackItem = _Stack[_StackIndex++];
-           await AddThrow(stackItem, true);
-
-       }
-       private async Task Undo()
-       {
-           var @throw = _Stack[--_StackIndex];
-           var scoreGroups = @throw.Score.GroupBy(x => x.Target);
-           PlayerOnTurn.Throws.Add(new CricketThrow()
-           {
-               Score = scoreGroups.Select(x => new CricketNumberScore
-               {
-                   Count = x.Count(),
-                   Target = x.Key,
-               }).ToList()
-           });
-           foreach (var item in scoreGroups)
-           {
-               if (PlayerOnTurn.Scores.ContainsKey(item.Key))
-                   PlayerOnTurn.Scores[item.Key] += item.Count();
-               else
-                   PlayerOnTurn.Scores[item.Key] = item.Count();
-           }
-           foreach (var player in @throw.PointsForPlayers)
-           {
-               player.Player.Points += player.Points.Sum();
-           }
-           if (Players.Count == (PlayerOnTurnIndex + 1))
-           {
-               PlayerOnTurnIndex = 0;
-               Round++;
-           }
-           else
-           {
-               PlayerOnTurnIndex++;
-           }
-       }*/
 
     private void ResolvePlayerOnTurn()
     {
@@ -374,7 +332,7 @@ public partial class CricketGamePage
 
     private void UpdateCurrentPlayerDeficit()
     {
-        if (Players == null || Players.Count == 0)
+        if (Players == null || Players.Count < 2)
         {
             CurrentPlayerDeficit = 0;
             return;

@@ -27,9 +27,6 @@ public class CricketPracticeGamePersistence : ICricketPracticeGamePersistence
         {
             existingEntity.Targets = entity.Targets;
             existingEntity.Players = entity.Players;
-            existingEntity.Sets = entity.Sets;
-            existingEntity.Legs = entity.Legs;
-            existingEntity.UnlimitedLegs = entity.UnlimitedLegs;
         }
         await db.SaveChanges();
     }

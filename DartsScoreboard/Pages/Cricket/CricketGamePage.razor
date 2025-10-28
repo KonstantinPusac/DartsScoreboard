@@ -54,7 +54,7 @@
             <!-- Result Cards -->
             <div class="result-cards">
                 <div class="result-card points-card @(CurrentPlayerDeficit > 0 ? "positive" : CurrentPlayerDeficit < 0 ? "negative" : "zero")">
-                    <div class="card-label">Current Points</div>
+                    <div class="card-label">Current</div>
                     <div class="card-value">@(CurrentPlayerDeficit >= 0 ? "+" : "")@CurrentPlayerDeficit pts</div>
                 </div>
                 
@@ -78,11 +78,11 @@
                 <div class="stat-item">
                     <div class="stat-label">mks/r</div>
                     <div class="stat-value">@GetMarksPerRound()</div>
-                </div>
+                </div> 
                 <div class="stat-item">
-                    <div class="stat-label">pts/r</div>
-                    <div class="stat-value">@GetPointsPerRound()</div>
-                </div>
+                    <div class="stat-label">leg mks/r</div>
+                    <div class="stat-value">@GetLegMarksPerRound()</div>
+                </div> 
                 <div class="stat-item">
                     <div class="stat-label">mks</div>
                     <div class="stat-value">@GetTotalMarks()/21</div>
@@ -133,13 +133,13 @@
         int totalMarks = PlayerOnTurn.Throws.Sum(t => t.Score.Sum(s => s.Count)) + CurrentThrow.Score.Count;
         return (totalMarks / (double)Round).ToString("0.0");
     }
-
-    private string GetPointsPerRound()
+    private string GetLegMarksPerRound()
     {
         if (Round == 0) return "0.0";
-        return (CalculatePoints(PlayerOnTurn) / (double)Round).ToString("0.0");
+        int totalMarks = PlayerOnTurn.Throws.Sum(t => t.Score.Sum(s => s.Count)) + CurrentThrow.Score.Count;
+        return (totalMarks / (double)Round).ToString("0.0");
     }
-
+     
     private int GetTotalMarks()
     {
         var targets = new[] { "20", "19", "18", "17", "16", "15", "BULL" };
