@@ -1,0 +1,28 @@
+@namespace DartsScoreboard
+@using MudBlazor
+@inherits ComponentBase
+
+@code {
+    [CascadingParameter] public IMudDialogInstance DialogRef { get; set; } = default!;
+
+    private Task OnSelected(User user)
+    {
+        DialogRef.Close(DialogResult.Ok(user));
+        return Task.CompletedTask;
+    }
+
+    private Task OnNewPlayer(string name)
+    {
+        DialogRef.Close(DialogResult.Ok<User?>(null));
+        return Task.CompletedTask;
+    }
+
+    private void Cancel() => DialogRef.Close(DialogResult.Cancel());
+}
+
+<MudDialog Class="player-bottom-sheet">
+    <DialogContent>
+        <UniversalPlayerSelector IsVisible="true" UseOverlay="false" OnPlayerSelected="OnSelected"  />
+    </DialogContent> 
+
+</MudDialog>

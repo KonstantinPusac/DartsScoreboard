@@ -9,28 +9,37 @@ namespace DartsScoreboard
         // Player settings 
         [Inject] IDialogService _DialogService { get; set; } = default!;
         [Inject] PlayerSelectionService PlayerService { get; set; } = default!;
-        [Inject] IUserPersistence _UserPersistence { get; set; } = default!;
         [Inject] NavigationManager _NavigationManager { get; set; } = default!;
         [Inject] public ICricketPersistence _CricketPersistence { get; set; } = default!;
-        
+
         private bool IsFull => PlayerService.SelectedPlayers.Count >= 8;
-        
+
         protected override async Task OnInitializedAsync()
         {
             // now it is safe to call anything that uses db.Users.ToList() etc.
             await PlayerService.LoadAllUsersAsync();
         }
-        
+
         public async Task OpenAddPopup()
         {
-            var options = new DialogOptions { CloseOnEscapeKey = true };
-            var result = await _DialogService.ShowAsync<PlayerSelectorDialog>("", options);
+            var options = new DialogOptions
+            {
+                CloseOnEscapeKey = true,
+                Position = DialogPosition.BottomCenter,
+                FullWidth = true,
+                MaxWidth = MaxWidth.False,
+                NoHeader = true
+            };
+            var dialog = await _DialogService.ShowAsync<UniversalPlayerSelectorDialog>("Select Player", options);
+            var result = await dialog.Result;
+
+            StateHasChanged();
         }
-        
+
         private async Task StartGame()
         {
-            if (PlayerService.SelectedPlayers.Count < 2) return;
-            
+            if (PlayerService.SelectedPlayers.Count < 1) return;
+
             string code = Guid.NewGuid().ToString();
             await _CricketPersistence.AddOrUpdate(
                  new CricketGame

@@ -92,9 +92,13 @@
     color: #1b2a3b;
     flex: 1;
 }
-
+.players-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
 .remove-btn {
-    background: #dc3545;
+    background: var(--color1);
     color: white;
     border: none;
     border-radius: 50%;
@@ -108,19 +112,14 @@
     font-weight: bold;
     transition: all 0.2s ease;
 }
-
-.remove-btn:hover {
-    background: #c82333;
-    transform: scale(1.1);
-}
+ 
 
 .start-section {
     text-align: center;
     padding: 20px 0;
 }
 
-.start-btn {
-    background: linear-gradient(135deg, #4CAF50, #45a049);
+.start-btn { 
     color: white;
     border: none;
     padding: 15px 30px;
@@ -128,14 +127,9 @@
     font-size: 18px;
     font-weight: bold;
     cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+    transition: all 0.3s ease; 
 }
-
-.start-btn:hover:not(:disabled) {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
-}
+ 
 
 .start-btn:disabled {
     background: #6c757d;
@@ -154,18 +148,8 @@
     transition: all 0.2s ease;
     text-decoration: none;
     display: inline-block;
-}
-
-.btn-primary {
-    background: linear-gradient(135deg, #4CAF50, #45a049);
-    color: white;
-}
-
-.btn-primary:hover:not(:disabled) {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
-}
-
+} 
+ 
 .btn:disabled {
     opacity: 0.5;
     cursor: not-allowed;

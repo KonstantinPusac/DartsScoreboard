@@ -1,11 +1,10 @@
-﻿@namespace DartsScoreboard
+@namespace DartsScoreboard
 @page "/cricket-setup"
-@using DartsScoreboard.Components
 
 <div class="setup-container">
     <div class="setup-header">
         <button class="back-btn" @onclick="GoBack">
-            ← Back
+           Back
         </button>
         <h2>Cricket Game Setup</h2>
     </div>
@@ -13,11 +12,14 @@
     <div class="game-container">
         <!-- Player Options -->
         <div class="player-options">
+            <div class="players-header">
+
             <h4>Player Settings</h4>
             <!-- Add Player -->
-            <button class="btn btn-primary mb-2" @onclick="OpenPlayerSelector" disabled="@IsFull">
-                Add Player
+            <button class="btn btn-primary mb-2" @onclick="OpenAddPopup" disabled="@IsFull">
+                +
             </button>
+            </div>
 
             <!-- Added Players Display -->
             <div class="players-grid">
@@ -26,7 +28,7 @@
                     <div class="player-card">
                         <div class="player-name">@player.Name</div>
                         <button class="remove-btn" @onclick="() => PlayerService.RemovePlayer(player)">
-                            ×
+                            �
                         </button>
                     </div>
                 }
@@ -35,46 +37,15 @@
 
         <!-- Start Button -->
         <div class="start-section">
-            <button class="btn btn-primary start-btn" @onclick="StartGame" disabled="@(!CanStart)">
+            <button class="btn btn-primary start-btn" @onclick="StartGame" >
                 Start Cricket Game
             </button>
         </div>
     </div>
 </div>
 
-<!-- Universal Player Selector -->
-<UniversalPlayerSelector 
-    IsVisible="ShowPlayerSelector" 
-    IsVisibleChanged="OnPlayerSelectorVisibilityChanged"
-    OnPlayerSelected="OnPlayerSelected"
-    OnNewPlayerCreated="OnNewPlayerCreated" />
-
 @code {
-    public bool ShowPlayerSelector { get; set; }
     public bool CanStart => PlayerService.SelectedPlayers.Count >= 2;
-
-    private void OpenPlayerSelector()
-    {
-        ShowPlayerSelector = true;
-    }
-
-    private async Task OnPlayerSelectorVisibilityChanged(bool isVisible)
-    {
-        ShowPlayerSelector = isVisible;
-    }
-
-    private async Task OnPlayerSelected(User player)
-    {
-        PlayerService.AddExistingPlayer(player);
-        StateHasChanged();
-    }
-
-    private async Task OnNewPlayerCreated(string playerName)
-    {
-        // Player was already added in the component
-        await PlayerService.LoadAllUsersAsync();
-        StateHasChanged();
-    }
 
     private void GoBack()
     {

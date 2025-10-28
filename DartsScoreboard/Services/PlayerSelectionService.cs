@@ -6,12 +6,15 @@ public class PlayerSelectionService
 {
     public List<User> AllUsers { get; private set; } = new();
     public List<User> SelectedPlayers { get; set; } = new();
+    public List<User> NotSelectedPlayers { get; set; } = new();
     public int GuestCounter { get; private set; } = 1;
 
     public bool ShowAddPopup { get; set; } = false;
     public bool ShowUserDropdown { get; set; } = false;
 
     private readonly IIndexedDbFactory _dbFactory;
+
+    DartsScoreBoardDb db;
     public PlayerSelectionService(IIndexedDbFactory dbFactory)
     {
         _dbFactory = dbFactory;
@@ -20,6 +23,8 @@ public class PlayerSelectionService
     public void Reset()
     {
         SelectedPlayers.Clear();
+        db.SelectedPlayers.Clear();
+        db.SaveChanges();
         GuestCounter = 1;
         ShowAddPopup = false;
         ShowUserDropdown = false;
@@ -50,6 +55,8 @@ public class PlayerSelectionService
             Id = -GuestCounter          // if Id is negative its the guest player
         };
         SelectedPlayers.Add(guest);
+        db.SelectedPlayers.Add(guest);
+        db.SaveChanges();
         CloseAddPopup();
     }
     public void AddExistingPlayer(User user)
@@ -58,18 +65,46 @@ public class PlayerSelectionService
         if (SelectedPlayers.Exists(p => p.Id == user.Id)) return;
 
         SelectedPlayers.Add(user);
+        NotSelectedPlayers.Remove(user);
+        db.SelectedPlayers.Add(user);
+        db.SaveChanges();
+
         CloseAddPopup();
+    }
+    public async Task CreateUser(User user)
+    {
+        var existing = SelectedPlayers.FirstOrDefault(p => p.Name == user.Name);
+        if (existing != null)
+        {
+            db.SelectedPlayers.Add(existing);
+            SelectedPlayers.Add(user);
+            await db.SaveChanges();
+            return;
+        }
+
+        db.Users.Add(user);
+        db.SelectedPlayers.Add(user);
+
+        await db.SaveChanges();
+        AllUsers.Add(user);
+        SelectedPlayers.Add(user);
     }
     public void RemovePlayer(User user)
     {
         SelectedPlayers.Remove(user);
+        db.SelectedPlayers.Remove(user);
+        db.SaveChanges();
+        NotSelectedPlayers.Add(user);
     }
     public async Task LoadAllUsersAsync()
     {
+        if (AllUsers.Count > 0) return;
         try
         {
-            using var db = await _dbFactory.Create<DartsScoreBoardDb>();
+            db = await _dbFactory.Create<DartsScoreBoardDb>();
             AllUsers = db.Users.ToList();  // Safe: store is guaranteed to exist
+            SelectedPlayers = db.SelectedPlayers.ToList();
+            NotSelectedPlayers = AllUsers.Where(x => !SelectedPlayers.Any(y => y.Id == x.Id)).ToList();
         }
         catch (Exception ex)
         {

@@ -34,9 +34,27 @@
     justify-content: space-between;
     align-items: center;
     padding: 20px;
-    border-bottom: 1px solid #e9ecef;
+    border-bottom: 1px solid var(--color1);
 }
-
+.close-x
+{
+    width:30px;
+    font-size:28px;
+}
+.add-button {
+    background-color: var(--color1);
+    width: 48px !important;
+    height: 48px !important;
+    min-width: 48px;
+    min-height: 48px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    font-size: 24px;
+    line-height: 1;
+}
 .modal-header h3 {
     margin: 0;
     color: #1b2a3b;
@@ -78,7 +96,7 @@
 .search-input {
     width: 100%;
     padding: 12px 16px;
-    border: 2px solid #e9ecef;
+    border: 2px solid var(--color1);
     border-radius: 8px;
     font-size: 16px;
     transition: border-color 0.2s ease;
@@ -92,7 +110,7 @@
 .tabs {
     display: flex;
     margin-bottom: 20px;
-    border-bottom: 1px solid #e9ecef;
+    border-bottom: 1px solid var(--color1);
 }
 
 .tab {
@@ -126,21 +144,15 @@
     justify-content: space-between;
     align-items: center;
     padding: 12px 16px;
-    border: 2px solid #e9ecef;
+    border: 2px solid var(--color1);
     border-radius: 8px;
     margin-bottom: 8px;
     cursor: pointer;
     transition: all 0.2s ease;
-}
-
-.player-item:hover {
-    border-color: #4CAF50;
-    background: #f8f9fa;
-}
+} 
 
 .player-item.selected {
-    border-color: #4CAF50;
-    background: linear-gradient(135deg, #e8f5e8, #d4edda);
+    border-color: var(--color2); 
 }
 
 .player-info {
@@ -190,7 +202,7 @@
 .form-input {
     width: 100%;
     padding: 12px 16px;
-    border: 2px solid #e9ecef;
+    border: 2px solid var(--color1);
     border-radius: 8px;
     font-size: 16px;
     transition: border-color 0.2s ease;
@@ -212,7 +224,7 @@
     justify-content: flex-end;
     gap: 12px;
     padding: 20px;
-    border-top: 1px solid #e9ecef;
+    border-top: 1px solid var(--color1);
 }
 
 .btn {
@@ -230,17 +242,7 @@
 .btn:disabled {
     opacity: 0.5;
     cursor: not-allowed;
-}
-
-.btn-primary {
-    background: linear-gradient(135deg, #4CAF50, #45a049);
-    color: white;
-}
-
-.btn-primary:hover:not(:disabled) {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
-}
+} 
 
 .btn-secondary {
     background: #6c757d;
