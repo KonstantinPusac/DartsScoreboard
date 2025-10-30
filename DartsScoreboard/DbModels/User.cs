@@ -5,11 +5,11 @@ public class User
     [System.ComponentModel.DataAnnotations.Key]
     public int Id { get; set; }
     public string Name { get; set; }
-    public UserStats Stats { get; set; } = new ();
-    public List<OldGamesStats> GameHistory { get; set; } = new ();
+    public bool IsSelected { get; set; }
+    public UserStats Stats { get; set; } = new();
+    public List<OldGamesStats> GameHistory { get; set; } = new();
     public List<UserCheckoutPracticeHistory> CheckoutPracticeHistory { get; set; } = new();
 }
-
 public class UserStats
 {
     // Additional statistics

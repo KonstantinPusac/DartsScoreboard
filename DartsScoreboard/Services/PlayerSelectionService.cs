@@ -23,7 +23,10 @@ public class PlayerSelectionService
     public void Reset()
     {
         SelectedPlayers.Clear();
-        db.SelectedPlayers.Clear();
+        foreach (var item in db.Users.ToList())
+        {
+            item.IsSelected = false;
+        }
         db.SaveChanges();
         GuestCounter = 1;
         ShowAddPopup = false;
@@ -55,7 +58,6 @@ public class PlayerSelectionService
             Id = -GuestCounter          // if Id is negative its the guest player
         };
         SelectedPlayers.Add(guest);
-        db.SelectedPlayers.Add(guest);
         db.SaveChanges();
         CloseAddPopup();
     }
@@ -66,7 +68,7 @@ public class PlayerSelectionService
 
         SelectedPlayers.Add(user);
         NotSelectedPlayers.Remove(user);
-        db.SelectedPlayers.Add(user);
+        user.IsSelected = true;
         db.SaveChanges();
 
         CloseAddPopup();
@@ -76,23 +78,22 @@ public class PlayerSelectionService
         var existing = SelectedPlayers.FirstOrDefault(p => p.Name == user.Name);
         if (existing != null)
         {
-            db.SelectedPlayers.Add(existing);
-            SelectedPlayers.Add(user);
+            existing.IsSelected = true;
+            SelectedPlayers.Add(existing);
             await db.SaveChanges();
             return;
         }
 
+        user.IsSelected = true;
         db.Users.Add(user);
-        db.SelectedPlayers.Add(user);
-
         await db.SaveChanges();
         AllUsers.Add(user);
         SelectedPlayers.Add(user);
     }
     public void RemovePlayer(User user)
     {
+        user.IsSelected = false;
         SelectedPlayers.Remove(user);
-        db.SelectedPlayers.Remove(user);
         db.SaveChanges();
         NotSelectedPlayers.Add(user);
     }
@@ -103,8 +104,8 @@ public class PlayerSelectionService
         {
             db = await _dbFactory.Create<DartsScoreBoardDb>();
             AllUsers = db.Users.ToList();  // Safe: store is guaranteed to exist
-            SelectedPlayers = db.SelectedPlayers.ToList();
-            NotSelectedPlayers = AllUsers.Where(x => !SelectedPlayers.Any(y => y.Id == x.Id)).ToList();
+            SelectedPlayers = AllUsers.Where(x => x.IsSelected).ToList();
+            NotSelectedPlayers = AllUsers.Where(x => !x.IsSelected).ToList();
         }
         catch (Exception ex)
         {

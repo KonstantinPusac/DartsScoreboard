@@ -12,7 +12,7 @@ public class CricketGame
 public class CricketPlayer
 {
     public int? UserId { get; set; }
-    public string GuestName { get; set; }
+    public string Name { get; set; }
     public List<CricketThrow> Throws { get; set; } = new();
     public List<CricketNumberScore> Scores { get; set; } = new()
     {

@@ -107,7 +107,7 @@ public partial class CricketGamePage
             Points = x.Points,
             Scores = x.Scores.ToDictionary(x => x.Target, x => x.Count),
             UserId = x.UserId,
-            Name = users.FirstOrDefault(u => u.Id == x.UserId)?.Name ?? x.GuestName ?? "Guest",
+            Name = users.FirstOrDefault(u => u.Id == x.UserId)?.Name ?? x.Name ?? "Guest",
         }).ToList();
 
         ResolvePlayerOnTurn();
@@ -266,7 +266,7 @@ public partial class CricketGamePage
         var playersCopy = Players.Select(x => new CricketPlayer
         {
             UserId = x.UserId,
-            GuestName = x.Name,
+            Name = x.Name,
             Throws = x.Throws.Select(t => new CricketThrow
             {
                 Score = t.Score.Select(s => new CricketNumberScore
@@ -308,7 +308,7 @@ public partial class CricketGamePage
             Scores = x.Scores.ToDictionary(s => s.Target, s => s.Count),
             Points = x.Points,
             UserId = x.UserId,
-            Name = _usersCache.FirstOrDefault(u => u.Id == x.UserId)?.Name ?? x.GuestName ?? "Guest",
+            Name = _usersCache.FirstOrDefault(u => u.Id == x.UserId)?.Name ?? x.Name ?? "Guest",
         }).ToList();
         PlayerOnTurnIndex = Math.Clamp(snap.PlayerOnTurnIndex, 0, Math.Max(Players.Count - 1, 0));
         Round = Math.Max(1, snap.Round);
@@ -353,7 +353,7 @@ public partial class CricketGamePage
         Game.Players = Players.Select(x => new CricketPlayer
         {
             UserId = x.UserId,
-            GuestName = x.Name,
+            Name = x.Name,
             Throws = x.Throws.Select(t => new CricketThrow
             {
                 Score = t.Score.Select(s => new CricketNumberScore
