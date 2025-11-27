@@ -180,7 +180,7 @@ namespace DartsScoreboard
         {
             if (Players == null || Players.Count == 0 || CurrentPlayerIndex >= Players.Count)
                 return 0;
-            return PlayerScores[Players[CurrentPlayerIndex].Id].PlayerThrows;
+            return PlayerScores[Players[CurrentPlayerIndex].Id].PlayerThrowsLeg;
         }
 
         private int GetLastThrow()
@@ -613,6 +613,7 @@ namespace DartsScoreboard
                     {
                         PlayerScores[players.Id].PlayerLegs = 0;
                         PlayerScores[players.Id].PlayerScore = GameSettings.StartingScore;
+                        PlayerScores[players.Id].PlayerThrows = 0;
                         PlayerScores[players.Id].PlayerThrowsLeg = 0;
                     }
 
@@ -650,6 +651,7 @@ namespace DartsScoreboard
                     foreach (var players in Players)
                     {
                         PlayerScores[players.Id].PlayerScore = GameSettings.StartingScore;
+                        PlayerScores[players.Id].PlayerThrows = 0;
                         PlayerScores[players.Id].PlayerThrowsLeg = 0;
                     }
 

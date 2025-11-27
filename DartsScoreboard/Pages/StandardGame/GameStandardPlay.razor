@@ -70,6 +70,9 @@ else
 
         @{
             var activePlayer = Players != null && Players.Count > CurrentPlayerIndex ? Players[CurrentPlayerIndex] : null;
+            var activeScore = activePlayer != null && PlayerScores.ContainsKey(activePlayer.Id)
+                ? PlayerScores[activePlayer.Id]
+                : null;
         }
 
         @if (activePlayer != null)
@@ -100,8 +103,12 @@ else
                         <div class="stat-value">@((UseThreeDartMode ? "3 darts" : "regular").ToUpper())</div>
                     </div>
                     <div class="stat-item">
-                        <div class="stat-label">highest finish</div>
-                        <div class="stat-value">@activePlayer.Stats?.HighestFinish</div>
+                        <div class="stat-label">sets</div>
+                        <div class="stat-value">@activeScore?.PlayerSets</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">legs</div>
+                        <div class="stat-value">@activeScore?.PlayerLegs</div>
                     </div>
                 </div>
             </div>
