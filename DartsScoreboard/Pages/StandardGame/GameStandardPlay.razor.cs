@@ -70,6 +70,7 @@ namespace DartsScoreboard
 
         // Creating undo stack
         public Stack<RoundSnapshot> UndoStack = new();
+        private bool CanUndo => UndoStack?.Count > 0;
 
         // Checkout list and darts used on a double
         private void OnSelectDartsUsedOnDouble(int value) => SelectedDartsUsedOnDouble = value;
@@ -953,7 +954,23 @@ namespace DartsScoreboard
                     if (score < 181)
                     {
                         InputRemainingScore = score;
-                        InputScore = (PlayerScores[currentPlayer.Id].PlayerScore - InputRemainingScore).ToString();
+                        if ((PlayerScores[currentPlayer.Id].PlayerScore - InputRemainingScore) <= score)
+                        {
+                            InputScore = (PlayerScores[currentPlayer.Id].PlayerScore - InputRemainingScore).ToString();
+                        }
+                        else
+                        {
+                            // Invalid score
+                            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomCenter;
+                            Snackbar.Add("Invalid score", Severity.Error, options =>
+                            {
+                                options.RequireInteraction = false;
+                                options.HideIcon = false;
+                                options.VisibleStateDuration = 500;
+                            });
+                            InputScore = "";
+                        }
+                        
                         await SubmitScore();
                     }
                     else
@@ -970,10 +987,9 @@ namespace DartsScoreboard
                     }
                 }
             }
-            else if (key.Value == "UNDO")
+            else if (key.Value == "SUBMIT")
             {
-                await UndoMove();
-                InputScore = "";
+                await SubmitScore();
             }
             else
             {
@@ -1016,11 +1032,9 @@ namespace DartsScoreboard
                         break;
                 }
             }
-            else if (key.Value == "UNDO")
+            else if (key.Value == "SUBMIT")
             {
-                await UndoMove();
-                InputScoreDartOne = InputScoreDartTwo = InputScoreDartThree = "";
-                DartIndex = 1;
+                await SubmitScore();
             }
             else
             {
@@ -1181,6 +1195,21 @@ namespace DartsScoreboard
         {
             NavManager.NavigateTo("/gamesStandard");
         }
+        private async Task UndoFromToolbar()
+        {
+            if (!CanUndo)
+            {
+                return;
+            }
+
+            await UndoMove();
+            InputScore = "";
+            InputScoreDartOne = "";
+            InputScoreDartTwo = "";
+            InputScoreDartThree = "";
+            DartIndex = 1;
+            StateHasChanged();
+        }
 
         public KeyboardParameters KeyboardParams = new()
         {
@@ -1206,9 +1235,9 @@ namespace DartsScoreboard
                 },
                 new List<KeyboardKey>
                 {
-                    new() { Text = "Undo", Value = "UNDO" },
+                    new() { Text = "Remaining", Value = "REM" },
                     new() { Text = "0", Value = "0" },
-                    new() { Text = "Remaining", Value = "REM" }  // Remaining button
+                    new() { Text = "Submit", Value = "SUBMIT" }
                 }
             }
         };
@@ -1251,7 +1280,7 @@ namespace DartsScoreboard
                 },
                 new List<KeyboardKey>
                 {
-                    new() { Text = "Undo", Value = "UNDO" },
+                    new() { Text = "Submit", Value = "SUBMIT" },
                     new() { Text = "Bull(25)", Value = "25" },
                     new() { Text = "Miss", Value = "MISS" },
                     new() { Text = "Del", Value = "DEL" }
@@ -1296,7 +1325,7 @@ namespace DartsScoreboard
                 },
                 new List<KeyboardKey>
                 {
-                    new() { Text = "Undo", Value = "UNDO" },
+                    new() { Text = "Submit", Value = "SUBMIT" },
                     new() { Text = "Bull(50)", Value = "50" },
                     new() { Text = "Miss", Value = "MISS" },
                     new() { Text = "Del", Value = "DEL" }
@@ -1341,7 +1370,7 @@ namespace DartsScoreboard
                 },
                 new List<KeyboardKey>
                 {
-                    new() { Text = "Undo", Value = "UNDO" },
+                    new() { Text = "Submit", Value = "SUBMIT" },
                     new() { Text = "Miss", Value = "MISS" },
                     new() { Text = "Del", Value = "DEL" }
                 }
